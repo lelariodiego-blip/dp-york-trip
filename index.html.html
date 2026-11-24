@@ -1,0 +1,2319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DP Trip and Journey — York Bespoke Travel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            york: {
+              navy: '#0F1E36',
+              navyLight: '#1B3156',
+              gold: '#D99B26',
+              goldLight: '#F3C969',
+              cream: '#FAF7F0',
+              parchment: '#F1ECE1',
+              crimson: '#B83232',
+              forest: '#1F6E58',
+              slate: '#334155',
+              border: '#DDD4C0'
+            }
+          },
+          fontFamily: {
+            serif: ['Cinzel', 'Georgia', 'serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #FAF7F0;
+      color: #0F1E36;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* Subtle parchment texture */
+    .parchment-bg {
+      background-color: #FAF7F0;
+      background-image: radial-gradient(rgba(15, 30, 54, 0.04) 1px, transparent 0);
+      background-size: 22px 22px;
+    }
+
+    /* GTA-style map styling */
+    .gta-map-viewport {
+      background: #18232C;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    .gta-map-viewport:active {
+      cursor: grabbing;
+    }
+    .map-pin-pulse {
+      animation: pinPulse 2.2s infinite ease-in-out;
+    }
+    @keyframes pinPulse {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.38); opacity: 0.25; }
+    }
+
+    /* Print styling so only the VIP Pass prints cleanly */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #vip-pass-printable,
+      #vip-pass-printable * {
+        visibility: visible !important;
+      }
+      #vip-pass-printable {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 24px !important;
+        box-shadow: none !important;
+        border: 3px solid #D99B26 !important;
+        background: #FAF7F0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="parchment-bg min-h-screen flex flex-col antialiased selection:bg-york-gold selection:text-york-navy">
+
+  <!-- ===================================================================== -->
+  <!-- 1. CENTERED VERTICAL WELCOME SCREEN (#welcome-screen)                  -->
+  <!-- ===================================================================== -->
+  <section id="welcome-screen" class="min-h-screen flex flex-col items-center justify-center px-4 py-10 text-center bg-gradient-to-b from-york-navy via-[#132644] to-york-navy text-york-cream relative overflow-hidden">
+    <!-- Subtle decorative radial glow -->
+    <div class="absolute inset-0 pointer-events-none opacity-25" style="background: radial-gradient(circle at 50% 25%, #D99B26 0%, transparent 60%);"></div>
+
+    <div class="relative z-10 max-w-3xl w-full flex flex-col items-center space-y-6">
+      <!-- Top Agency Crest / Emblem SVG -->
+      <div class="flex flex-col items-center">
+        <svg class="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-xl" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="DP Trip and Journey Crest">
+          <circle cx="70" cy="70" r="65" fill="#0F1E36" stroke="#D99B26" stroke-width="3.5"/>
+          <circle cx="70" cy="70" r="57" stroke="#F3C969" stroke-width="1" stroke-dasharray="4 3"/>
+          <!-- Shield -->
+          <path d="M40 34H100V72C100 94 70 112 70 112C70 112 40 94 40 72V34Z" fill="#1B3156" stroke="#D99B26" stroke-width="2.5"/>
+          <!-- Cross / White Rose of York accent -->
+          <path d="M70 36V109M42 66H98" stroke="#D99B26" stroke-width="1.5" stroke-opacity="0.45"/>
+          <!-- Crown top -->
+          <path d="M52 28L58 19L70 25L82 19L88 28H52Z" fill="#D99B26"/>
+          <!-- DP Monogram -->
+          <text x="70" y="74" text-anchor="middle" fill="#FAF7F0" font-family="Cinzel, Georgia, serif" font-weight="800" font-size="28" letter-spacing="2">DP</text>
+          <text x="70" y="90" text-anchor="middle" fill="#F3C969" font-family="JetBrains Mono, monospace" font-weight="700" font-size="7.5" letter-spacing="1.8">YORK • UK</text>
+        </svg>
+        <span class="mt-3 font-mono text-xs uppercase tracking-[0.28em] text-york-goldLight font-bold">
+          DP Trip and Journey • Bespoke British Heritage
+        </span>
+      </div>
+
+      <!-- Panoramic York Minster & City Walls Custom SVG Artwork -->
+      <div class="w-full max-w-2xl rounded-3xl overflow-hidden border-2 border-york-gold/50 shadow-2xl bg-[#0B1628]">
+        <svg class="w-full h-44 sm:h-56 block" viewBox="0 0 800 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Panoramic York Skyline Illustration">
+          <defs>
+            <linearGradient id="yorkSky" x1="0" y1="0" x2="0" y2="240" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#0B1628"/>
+              <stop offset="60%" stop-color="#1D3557"/>
+              <stop offset="100%" stop-color="#B83232" stop-opacity="0.65"/>
+            </linearGradient>
+            <linearGradient id="ouseRiver" x1="0" y1="195" x2="800" y2="235" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#132A46"/>
+              <stop offset="50%" stop-color="#255C78"/>
+              <stop offset="100%" stop-color="#0F1E36"/>
+            </linearGradient>
+          </defs>
+          <rect width="800" height="240" fill="url(#yorkSky)"/>
+          <!-- Harvest Moon & Stars -->
+          <circle cx="660" cy="54" r="24" fill="#F3C969" fill-opacity="0.9"/>
+          <circle cx="120" cy="36" r="1.8" fill="#FAF7F0"/>
+          <circle cx="235" cy="28" r="1.5" fill="#FAF7F0"/>
+          <circle cx="515" cy="32" r="2" fill="#FAF7F0"/>
+          <circle cx="730" cy="84" r="1.5" fill="#FAF7F0"/>
+          <!-- Distant Hills -->
+          <path d="M0 155Q180 125 380 150T800 142V195H0V155Z" fill="#14263D"/>
+          <!-- York Minster Silhouette (Centerpiece) -->
+          <g fill="#0E1A2E" stroke="#D99B26" stroke-width="1.2">
+            <!-- Central Lantern Tower -->
+            <rect x="355" y="42" width="52" height="128"/>
+            <path d="M355 42L361 28L367 42L374 28L381 42L388 28L395 42L401 28L407 42"/>
+            <!-- West Twin Towers -->
+            <rect x="285" y="54" width="32" height="116"/>
+            <path d="M285 54L290 36L295 54M307 54L312 36L317 54"/>
+            <rect x="445" y="54" width="32" height="116"/>
+            <path d="M445 54L450 36L455 54M467 54L472 36L477 54"/>
+            <!-- Nave & Rose Window -->
+            <rect x="317" y="88" width="128" height="82"/>
+            <circle cx="381" cy="112" r="14" fill="#D99B26" fill-opacity="0.28" stroke="#F3C969"/>
+            <path d="M369 152C369 138 393 138 393 152V170H369V152Z" fill="#D99B26" fill-opacity="0.22"/>
+          </g>
+          <!-- Medieval City Walls & Timber Gables -->
+          <path d="M40 165H285V145H265V155H245V145H225V155H205V145H185V155H165V145H145V155H125V145H105V155H85V145H65V155H40V165Z" fill="#172842" stroke="#D99B26" stroke-opacity="0.45"/>
+          <path d="M477 165H760V145H740V155H720V145H700V155H680V145H660V155H640V145H620V155H600V145H580V155H560V145H540V155H520V145H500V155H477V165Z" fill="#172842" stroke="#D99B26" stroke-opacity="0.45"/>
+          <!-- River Ouse & Arch Bridge -->
+          <rect x="0" y="185" width="800" height="55" fill="url(#ouseRiver)"/>
+          <path d="M0 185H800" stroke="#D99B26" stroke-width="2"/>
+          <path d="M160 185C195 162 245 162 280 185M520 185C555 162 605 162 640 185" stroke="#F3C969" stroke-width="2.5" fill="none"/>
+          <!-- Golden shimmer on water -->
+          <path d="M340 202H420M355 214H405M368 225H392" stroke="#F3C969" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Editorial Headline & Subtitle -->
+      <div class="space-y-3 px-2">
+        <h1 class="font-serif text-3xl sm:text-5xl font-extrabold tracking-tight text-york-cream leading-tight">
+          Discover <span class="text-york-gold">York</span>: Two Millennia in One Walkable Masterpiece
+        </h1>
+        <p class="text-sm sm:text-lg text-slate-200 max-w-2xl mx-auto leading-relaxed">
+          Curated Roman, Viking, Medieval &amp; Ghostly Journeys Through England's Most Storied City — Crafted by <strong class="text-york-goldLight">Diego Lelario &amp; Pierluigi Lovaglio</strong>.
+        </p>
+      </div>
+
+      <!-- Primary CTA Button -->
+      <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+        <button type="button" onclick="enterChoiceHub()" class="px-8 py-4 rounded-2xl bg-york-gold hover:bg-york-goldLight text-york-navy font-extrabold text-sm sm:text-base uppercase tracking-wider shadow-xl transition transform hover:-translate-y-0.5 cursor-pointer">
+          Begin Your York Journey →
+        </button>
+        <button type="button" onclick="enterMainApp('overview')" class="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-york-cream border border-york-gold/40 font-semibold text-xs sm:text-sm transition cursor-pointer">
+          Jump Straight to Showcase
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 2. DEDICATED MODE SELECTION HUB (#choice-hub)                         -->
+  <!-- ===================================================================== -->
+  <section id="choice-hub" class="hidden min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-york-cream">
+    <div class="max-w-5xl w-full space-y-8">
+      <div class="text-center space-y-2">
+        <span class="font-mono text-xs uppercase tracking-widest text-york-crimson font-bold">
+          DP Trip and Journey • Interactive Navigator
+        </span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-extrabold text-york-navy">
+          How Would You Like to Proceed?
+        </h2>
+        <p class="text-sm sm:text-base text-york-slate max-w-xl mx-auto">
+          Choose your starting point below. You can switch between any tool, map, quiz, or itinerary section at any time.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Card 1: City Map -->
+        <button type="button" onclick="enterMainApp('map')" class="group text-left bg-white rounded-3xl p-6 sm:p-7 border-2 border-york-border hover:border-york-forest shadow-md hover:shadow-xl transition flex flex-col justify-between gap-4 cursor-pointer">
+          <div class="flex items-start justify-between gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-york-forest/10 text-york-forest flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                <line x1="9" y1="3" x2="9" y2="18"/>
+                <line x1="15" y1="6" x2="15" y2="21"/>
+              </svg>
+            </div>
+            <span class="font-mono text-xs font-bold uppercase px-3 py-1 rounded-full bg-york-forest/10 text-york-forest">
+              12 Landmarks
+            </span>
+          </div>
+          <div>
+            <h3 class="font-serif text-xl font-bold text-york-navy group-hover:text-york-forest transition">
+              Explore Interactive York Map
+            </h3>
+            <p class="text-xs sm:text-sm text-york-slate mt-1.5 leading-relaxed">
+              Navigate our GTA-inspired street &amp; building atlas of York, inspect Roman walls, bridges, and landmarks, and add stops to your plan.
+            </p>
+          </div>
+        </button>
+
+        <!-- Card 2: Persona Quiz -->
+        <button type="button" onclick="enterMainApp('quiz')" class="group text-left bg-white rounded-3xl p-6 sm:p-7 border-2 border-york-border hover:border-york-crimson shadow-md hover:shadow-xl transition flex flex-col justify-between gap-4 cursor-pointer">
+          <div class="flex items-start justify-between gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-york-crimson/10 text-york-crimson flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+            </div>
+            <span class="font-mono text-xs font-bold uppercase px-3 py-1 rounded-full bg-york-crimson/10 text-york-crimson">
+              7 Questions
+            </span>
+          </div>
+          <div>
+            <h3 class="font-serif text-xl font-bold text-york-navy group-hover:text-york-crimson transition">
+              Take the 7-Question Persona Quiz
+            </h3>
+            <p class="text-xs sm:text-sm text-york-slate mt-1.5 leading-relaxed">
+              Discover whether you are a Roman Strategist, Viking Explorer, Medieval Scholar, or Ghost Seeker—complete with "Did You Know?" trivia.
+            </p>
+          </div>
+        </button>
+
+        <!-- Card 3: Trip Builder -->
+        <button type="button" onclick="enterMainApp('builder')" class="group text-left bg-white rounded-3xl p-6 sm:p-7 border-2 border-york-border hover:border-york-gold shadow-md hover:shadow-xl transition flex flex-col justify-between gap-4 cursor-pointer">
+          <div class="flex items-start justify-between gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-york-gold/15 text-york-navy flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="16" rx="3"/>
+                <path d="M3 10h18M8 2v4M16 2v4"/>
+              </svg>
+            </div>
+            <span class="font-mono text-xs font-bold uppercase px-3 py-1 rounded-full bg-york-gold/20 text-york-navy">
+              Printable VIP Pass
+            </span>
+          </div>
+          <div>
+            <h3 class="font-serif text-xl font-bold text-york-navy group-hover:text-amber-700 transition">
+              Build Your Bespoke York Trip
+            </h3>
+            <p class="text-xs sm:text-sm text-york-slate mt-1.5 leading-relaxed">
+              Customize group size (adults, children &amp; dogs), hotel tier, landmarks, and instant GBP/EUR pricing—then print your official VIP Pass.
+            </p>
+          </div>
+        </button>
+
+        <!-- Card 4: Full Showcase -->
+        <button type="button" onclick="enterMainApp('overview')" class="group text-left bg-york-navy text-york-cream rounded-3xl p-6 sm:p-7 border-2 border-york-gold/60 shadow-md hover:shadow-xl transition flex flex-col justify-between gap-4 cursor-pointer">
+          <div class="flex items-start justify-between gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-york-gold/20 text-york-gold flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+              <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L15 8L22 9L17 14L18 21L12 18L6 21L7 14L2 9L9 8L12 2Z"/>
+              </svg>
+            </div>
+            <span class="font-mono text-xs font-bold uppercase px-3 py-1 rounded-full bg-york-gold text-york-navy">
+              Complete Tour
+            </span>
+          </div>
+          <div>
+            <h3 class="font-serif text-xl font-bold text-york-goldLight">
+              Browse Full Agency Showcase
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-200 mt-1.5 leading-relaxed">
+              Start at the executive Overview and explore curated packages, hidden snickelways, packing checklist, founders Diego &amp; Pierluigi, and fun facts.
+            </p>
+          </div>
+        </button>
+      </div>
+
+      <div class="text-center">
+        <button type="button" onclick="showWelcomeScreen()" class="text-xs font-mono uppercase tracking-wider text-york-slate hover:text-york-navy underline cursor-pointer">
+          ← Back to Welcome Crest
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 3. MAIN APPLICATION SHELL (NAVBAR + DYNAMIC VIEWS + FOOTER)           -->
+  <!-- ===================================================================== -->
+  <div id="main-app" class="hidden flex-1 flex flex-col">
+    <!-- Persistent Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-york-navy text-york-cream border-b-2 border-york-gold shadow-lg no-print">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 gap-3">
+          <!-- Brand Logo Button -->
+          <button type="button" onclick="enterChoiceHub()" class="flex items-center gap-2.5 text-left group cursor-pointer shrink-0" title="Return to Mode Selection Hub">
+            <svg class="w-9 h-9 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="32" cy="32" r="29" fill="#1B3156" stroke="#D99B26" stroke-width="2.5"/>
+              <text x="32" y="39" text-anchor="middle" fill="#FAF7F0" font-family="Cinzel, Georgia, serif" font-weight="800" font-size="19">DP</text>
+            </svg>
+            <div>
+              <div class="font-serif text-sm sm:text-base font-extrabold tracking-wide text-york-cream group-hover:text-york-gold transition leading-none">
+                DP Trip &amp; Journey
+              </div>
+              <div class="font-mono text-[10px] uppercase tracking-widest text-york-goldLight">
+                York Bespoke Travel
+              </div>
+            </div>
+          </button>
+
+          <!-- Currency Toggle & Mobile Menu Button -->
+          <div class="flex items-center gap-2 sm:gap-3">
+            <button id="currency-toggle-btn" type="button" onclick="toggleCurrency()" class="px-3 py-1.5 rounded-xl bg-york-gold hover:bg-york-goldLight text-york-navy font-mono text-xs font-extrabold shadow transition flex items-center gap-1.5 cursor-pointer" title="Switch display currency between GBP and EUR">
+              <span id="currency-badge-label">GBP (£)</span>
+              <span class="text-[10px] opacity-80">⇄ EUR</span>
+            </button>
+
+            <button type="button" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 text-york-cream cursor-pointer" aria-label="Toggle Navigation Menu">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <nav id="desktop-nav" class="hidden lg:flex items-center gap-1 pb-2.5 overflow-x-auto">
+          <button type="button" data-tab="overview" onclick="switchTab('overview')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Overview</button>
+          <button type="button" data-tab="map" onclick="switchTab('map')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">City Map</button>
+          <button type="button" data-tab="quiz" onclick="switchTab('quiz')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Persona Quiz</button>
+          <button type="button" data-tab="builder" onclick="switchTab('builder')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Trip Builder</button>
+          <button type="button" data-tab="gems" onclick="switchTab('gems')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Hidden Gems &amp; Packing</button>
+          <button type="button" data-tab="about" onclick="switchTab('about')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">About Us</button>
+          <button type="button" data-tab="facts" onclick="switchTab('facts')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Fun Facts</button>
+          <button type="button" data-tab="future" onclick="switchTab('future')" class="nav-tab px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Future Ideas</button>
+        </nav>
+
+        <!-- Mobile Navigation Drawer -->
+        <nav id="mobile-nav" class="hidden lg:hidden pb-3 grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          <button type="button" data-tab="overview" onclick="switchTab('overview'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">Overview</button>
+          <button type="button" data-tab="map" onclick="switchTab('map'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">City Map</button>
+          <button type="button" data-tab="quiz" onclick="switchTab('quiz'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">Persona Quiz</button>
+          <button type="button" data-tab="builder" onclick="switchTab('builder'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">Trip Builder</button>
+          <button type="button" data-tab="gems" onclick="switchTab('gems'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">Hidden Gems &amp; Packing</button>
+          <button type="button" data-tab="about" onclick="switchTab('about'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">About Us</button>
+          <button type="button" data-tab="facts" onclick="switchTab('facts'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">Fun Facts</button>
+          <button type="button" data-tab="future" onclick="switchTab('future'); toggleMobileMenu(false)" class="nav-tab px-3 py-2 rounded-xl text-xs font-bold text-left cursor-pointer">Future Ideas</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- 4. OVERVIEW SECTION (#view-overview)                                -->
+    <!-- =================================================================== -->
+    <main class="flex-1">
+      <section id="view-overview" class="app-view max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <!-- Hero Pitch Card -->
+        <div class="bg-white rounded-3xl p-6 sm:p-10 border-2 border-york-border shadow-md grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-7 space-y-4">
+            <span class="inline-block font-mono text-xs uppercase tracking-widest px-3 py-1 rounded-full bg-york-crimson/10 text-york-crimson font-bold">
+              Executive Destination Proposal • North Yorkshire, England
+            </span>
+            <h2 class="font-serif text-3xl sm:text-4xl font-extrabold text-york-navy leading-tight">
+              Why York Is Britain's Ultimate Living Classroom &amp; Cultural Escape
+            </h2>
+            <p class="text-sm sm:text-base text-york-slate leading-relaxed">
+              Founded as Roman <strong>Eboracum</strong> in 71 AD, ruled by Vikings as <strong>Jorvik</strong>, and crowned by Northern Europe's largest Gothic cathedral, York concentrates 2,000 years of European history inside compact, pedestrian-friendly medieval walls.
+            </p>
+            <div class="grid grid-cols-3 gap-3 pt-2">
+              <div class="bg-york-cream rounded-2xl p-3.5 border border-york-border text-center">
+                <div class="font-serif text-xl sm:text-2xl font-extrabold text-york-navy">3.4 km</div>
+                <div class="text-[11px] font-semibold text-york-slate">Walkable City Walls</div>
+              </div>
+              <div class="bg-york-cream rounded-2xl p-3.5 border border-york-border text-center">
+                <div class="font-serif text-xl sm:text-2xl font-extrabold text-york-crimson">1h 50m</div>
+                <div class="text-[11px] font-semibold text-york-slate">Direct Train from London</div>
+              </div>
+              <div class="bg-york-cream rounded-2xl p-3.5 border border-york-border text-center">
+                <div class="font-serif text-xl sm:text-2xl font-extrabold text-york-forest">365</div>
+                <div class="text-[11px] font-semibold text-york-slate">Historic Pubs &amp; Snickelways</div>
+              </div>
+            </div>
+            <div class="pt-2 flex flex-wrap gap-3">
+              <button type="button" onclick="switchTab('map')" class="px-5 py-3 rounded-2xl bg-york-navy hover:bg-york-navyLight text-york-cream font-bold text-xs sm:text-sm shadow transition cursor-pointer">
+                Open GTA-Style City Map
+              </button>
+              <button type="button" onclick="switchTab('quiz')" class="px-5 py-3 rounded-2xl bg-york-gold hover:bg-york-goldLight text-york-navy font-extrabold text-xs sm:text-sm shadow transition cursor-pointer">
+                Take Traveler Persona Quiz
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom Inline SVG Architectural Collage -->
+          <div class="lg:col-span-5">
+            <div class="rounded-3xl bg-york-navy p-5 border-2 border-york-gold shadow-xl text-york-cream space-y-3">
+              <svg class="w-full h-52 rounded-2xl bg-[#132644]" viewBox="0 0 420 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Rose Window Geometry -->
+                <circle cx="210" cy="110" r="88" stroke="#D99B26" stroke-width="2.5" fill="#0F1E36"/>
+                <circle cx="210" cy="110" r="66" stroke="#F3C969" stroke-width="1.5" stroke-dasharray="5 4"/>
+                <circle cx="210" cy="110" r="26" fill="#B83232" stroke="#FAF7F0" stroke-width="2"/>
+                <!-- Petals -->
+                <g stroke="#F3C969" stroke-width="1.6">
+                  <line x1="210" y1="22" x2="210" y2="198"/>
+                  <line x1="122" y1="110" x2="298" y2="110"/>
+                  <line x1="148" y1="48" x2="272" y2="172"/>
+                  <line x1="272" y1="48" x2="148" y2="172"/>
+                </g>
+                <!-- White Rose of York Center -->
+                <circle cx="210" cy="110" r="12" fill="#FAF7F0"/>
+                <circle cx="210" cy="110" r="5" fill="#D99B26"/>
+                <!-- Corner Labels -->
+                <text x="24" y="30" fill="#F3C969" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">AD 71 • EBORACUM</text>
+                <text x="295" y="30" fill="#F3C969" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">AD 866 • JORVIK</text>
+                <text x="24" y="202" fill="#FAF7F0" font-family="JetBrains Mono, monospace" font-size="10">YORK MINSTER ROSE</text>
+                <text x="288" y="202" fill="#FAF7F0" font-family="JetBrains Mono, monospace" font-size="10">53.9591° N, 1.0815° W</text>
+              </svg>
+              <div class="flex items-center justify-between text-xs px-1">
+                <span class="font-mono text-york-goldLight">White Rose Heritage Seal</span>
+                <span class="text-slate-300">Curated by DP Trip &amp; Journey</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Signature Curated Itinerary Tiers -->
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+            <div>
+              <span class="font-mono text-xs uppercase tracking-widest text-york-forest font-bold">Ready-to-Book Packages</span>
+              <h3 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">
+                Signature York Bespoke Itineraries
+              </h3>
+            </div>
+            <span class="text-xs font-mono text-york-slate">Prices update automatically with GBP/EUR toggle</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Package 1 -->
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm flex flex-col justify-between space-y-5">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-york-forest/10 text-york-forest">3 Days / 2 Nights</span>
+                  <span class="font-serif text-xl font-extrabold text-york-navy" data-gbp="340">£340</span>
+                </div>
+                <h4 class="font-serif text-xl font-bold text-york-navy">Roman &amp; Viking Immersion</h4>
+                <p class="text-xs text-york-slate leading-relaxed">
+                  Ideal for school groups and history enthusiasts. Includes York Minster undercroft, Multangular Tower, JORVIK Viking Centre, and guided Bar Walls walk.
+                </p>
+                <ul class="text-xs text-york-navy space-y-1.5 pt-2 border-t border-york-border">
+                  <li>✓ Boutique or Group Heritage Stay</li>
+                  <li>✓ 4 Priority Landmark Passes</li>
+                  <li>✓ Guided Roman-to-Viking Walk</li>
+                </ul>
+              </div>
+              <button type="button" onclick="loadPresetPackage('Roman & Viking Immersion', 3, 'Heritage Boutique Inn', ['minster', 'jorvik', 'bootham', 'museum'])" class="w-full py-3 rounded-2xl bg-york-navy hover:bg-york-navyLight text-york-cream font-bold text-xs uppercase tracking-wider transition cursor-pointer">
+                Load into Trip Builder
+              </button>
+            </article>
+
+            <!-- Package 2 (Featured) -->
+            <article class="bg-york-navy text-york-cream rounded-3xl p-6 border-2 border-york-gold shadow-xl flex flex-col justify-between space-y-5 relative">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-york-gold text-york-navy">4 Days / 3 Nights • Most Popular</span>
+                  <span class="font-serif text-xl font-extrabold text-york-goldLight" data-gbp="495">£495</span>
+                </div>
+                <h4 class="font-serif text-xl font-bold text-york-cream">The Grand York Chronicle</h4>
+                <p class="text-xs text-slate-200 leading-relaxed">
+                  Our signature all-in-one experience blending York Minster, The Shambles, Clifford's Tower, National Railway Museum, and an evening Ghost Walk.
+                </p>
+                <ul class="text-xs text-slate-100 space-y-1.5 pt-2 border-t border-york-gold/30">
+                  <li>✓ 4-Star Riverside Georgian Hotel</li>
+                  <li>✓ 6 Priority Attractions + River Cruise</li>
+                  <li>✓ Evening Lantern Ghost &amp; Folklore Tour</li>
+                </ul>
+              </div>
+              <button type="button" onclick="loadPresetPackage('The Grand York Chronicle', 4, 'Riverside Georgian 4-Star', ['minster', 'shambles', 'clifford', 'railway', 'chocolate', 'fleece'])" class="w-full py-3 rounded-2xl bg-york-gold hover:bg-york-goldLight text-york-navy font-extrabold text-xs uppercase tracking-wider transition cursor-pointer">
+                Load into Trip Builder
+              </button>
+            </article>
+
+            <!-- Package 3 -->
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm flex flex-col justify-between space-y-5">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-york-crimson/10 text-york-crimson">5 Days / 4 Nights</span>
+                  <span class="font-serif text-xl font-extrabold text-york-navy" data-gbp="680">£680</span>
+                </div>
+                <h4 class="font-serif text-xl font-bold text-york-navy">Royal Minster &amp; Secret Snickelways</h4>
+                <p class="text-xs text-york-slate leading-relaxed">
+                  Unrushed deep dive into York's guildhalls, chocolate-making heritage, Castle Museum, and private curator access with Diego &amp; Pierluigi.
+                </p>
+                <ul class="text-xs text-york-navy space-y-1.5 pt-2 border-t border-york-border">
+                  <li>✓ Luxury Cathedral Quarter Suite</li>
+                  <li>✓ All 12 Map Landmarks Unlocked</li>
+                  <li>✓ Private Afternoon Tea &amp; Concierge</li>
+                </ul>
+              </div>
+              <button type="button" onclick="loadPresetPackage('Royal Minster & Secret Snickelways', 5, 'Cathedral Luxury Suite', ['minster', 'shambles', 'clifford', 'jorvik', 'railway', 'castle', 'merchant', 'chocolate'])" class="w-full py-3 rounded-2xl bg-york-navy hover:bg-york-navyLight text-york-cream font-bold text-xs uppercase tracking-wider transition cursor-pointer">
+                Load into Trip Builder
+              </button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 5. GTA-STYLE CARTOGRAPHIC YORK CITY MAP (#view-map)                 -->
+      <!-- =================================================================== -->
+      <section id="view-map" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-widest text-york-forest font-bold">
+              Cartographic Street &amp; Building Atlas
+            </span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">
+              Interactive City Map of York (12 Districts &amp; Landmarks)
+            </h2>
+            <p class="text-xs sm:text-sm text-york-slate mt-1">
+              Click any numbered landmark across North, South, East, West, and both banks of the River Ouse. Drag to pan or use zoom controls.
+            </p>
+          </div>
+
+          <!-- Zoom Controls -->
+          <div class="flex items-center gap-2 self-start md:self-auto">
+            <button type="button" onclick="zoomMap(0.2)" class="px-3.5 py-2 rounded-xl bg-york-navy hover:bg-york-navyLight text-york-cream font-mono text-xs font-bold shadow cursor-pointer">+ Zoom In</button>
+            <button type="button" onclick="zoomMap(-0.2)" class="px-3.5 py-2 rounded-xl bg-york-navy hover:bg-york-navyLight text-york-cream font-mono text-xs font-bold shadow cursor-pointer">- Zoom Out</button>
+            <button type="button" onclick="resetMapView()" class="px-3.5 py-2 rounded-xl bg-york-gold hover:bg-york-goldLight text-york-navy font-mono text-xs font-extrabold shadow cursor-pointer">Reset View</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Map Canvas (8 cols on desktop, 680px tall) -->
+          <div class="lg:col-span-8 rounded-3xl overflow-hidden border-4 border-york-navy shadow-2xl relative gta-map-viewport h-[460px] sm:h-[580px] lg:h-[680px]" id="map-container">
+            <!-- Top-left Map HUD -->
+            <div class="absolute top-3 left-3 z-20 bg-york-navy/90 backdrop-blur text-york-cream px-3.5 py-2 rounded-2xl border border-york-gold/50 text-[11px] font-mono pointer-events-none">
+              <div class="text-york-gold font-bold">YORK ATLAS • SECTOR 01-12</div>
+              <div class="text-slate-300">River Ouse • Medieval Bar Walls • Rail Hub</div>
+            </div>
+
+            <!-- Bottom-left Legend -->
+            <div class="absolute bottom-3 left-3 z-20 bg-york-navy/90 backdrop-blur text-york-cream px-3.5 py-2 rounded-2xl border border-york-gold/40 flex flex-wrap gap-3 text-[10px] font-mono pointer-events-none">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#38BDF8]"></span>River Ouse &amp; Foss</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#F59E0B]"></span>Medieval City Walls</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#94A3B8]"></span>Avenues &amp; Streets</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#34D399]"></span>Parks &amp; Gardens</span>
+            </div>
+
+            <!-- Interactive SVG City Map -->
+            <svg id="york-gta-svg" class="w-full h-full" viewBox="0 0 1000 760" xmlns="http://www.w3.org/2000/svg">
+              <g id="map-transform-group" transform="translate(0,0) scale(1)">
+                <!-- Base Urban Land -->
+                <rect x="-200" y="-200" width="1400" height="1160" fill="#1F2933"/>
+
+                <!-- Distinct District Zones (Subtle GTA-style neighborhood blocks) -->
+                <!-- North-West: Museum Gardens & Clifton -->
+                <path d="M90 60H430V310H290L240 240H90V60Z" fill="#23322D"/>
+                <!-- North-Central: Minster Quarter -->
+                <path d="M430 60H710V330H430V60Z" fill="#28313B"/>
+                <!-- East: Walmgate & Foss Basin -->
+                <path d="M710 120H940V630H670V330H710V120Z" fill="#262E38"/>
+                <!-- South-Central: Castle & Coppergate -->
+                <path d="M450 330H670V680H470L450 330Z" fill="#2A303C"/>
+                <!-- West & South-West: Railway Quarter & Micklegate -->
+                <path d="M60 260H360L450 680H60V260Z" fill="#242C36"/>
+
+                <!-- Parks & Green Spaces -->
+                <!-- Museum Gardens -->
+                <path d="M235 165L385 155L405 275L290 295L235 165Z" fill="#1E4D3B" stroke="#34D399" stroke-width="1.5"/>
+                <text x="315" y="225" fill="#6EE7B7" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle" opacity="0.85">MUSEUM GARDENS</text>
+                <!-- Dean's Park -->
+                <rect x="465" y="95" width="120" height="65" rx="8" fill="#1E4D3B" stroke="#34D399" stroke-width="1.2"/>
+                <!-- Rowntree Park South -->
+                <path d="M350 565L445 555L465 695L365 705L350 565Z" fill="#1E4D3B" stroke="#34D399" stroke-width="1.5"/>
+                <text x="408" y="635" fill="#6EE7B7" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle" opacity="0.8">ROWNTREE PARK</text>
+
+                <!-- City Building Footprints / Architectural Blocks (GTA style) -->
+                <g fill="#323F4B" stroke="#475569" stroke-width="1">
+                  <!-- North West Blocks -->
+                  <rect x="115" y="85" width="55" height="34" rx="3"/>
+                  <rect x="180" y="85" width="65" height="34" rx="3"/>
+                  <rect x="115" y="130" width="85" height="40" rx="3"/>
+                  <rect x="260" y="85" width="75" height="45" rx="3"/>
+                  <rect x="350" y="85" width="65" height="45" rx="3"/>
+                  <!-- Minster Quarter Blocks -->
+                  <rect x="465" y="175" width="95" height="58" rx="4" fill="#3E4C59" stroke="#D99B26" stroke-width="1.5"/>
+                  <rect x="580" y="175" width="65" height="45" rx="3"/>
+                  <rect x="580" y="232" width="75" height="55" rx="3"/>
+                  <rect x="455" y="255" width="52" height="52" rx="3"/>
+                  <rect x="520" y="255" width="48" height="52" rx="3"/>
+                  <!-- East & Shambles Quarter Blocks -->
+                  <rect x="685" y="160" width="70" height="48" rx="3"/>
+                  <rect x="770" y="160" width="85" height="48" rx="3"/>
+                  <rect x="685" y="225" width="60" height="65" rx="3"/>
+                  <rect x="760" y="225" width="95" height="65" rx="3"/>
+                  <rect x="695" y="315" width="85" height="55" rx="3"/>
+                  <rect x="795" y="315" width="80" height="55" rx="3"/>
+                  <rect x="720" y="400" width="75" height="65" rx="3"/>
+                  <rect x="810" y="400" width="80" height="65" rx="3"/>
+                  <rect x="735" y="490" width="90" height="60" rx="3"/>
+                  <!-- Central & South Castle Blocks -->
+                  <rect x="475" y="345" width="68" height="48" rx="3"/>
+                  <rect x="560" y="345" width="75" height="48" rx="3"/>
+                  <rect x="485" y="415" width="62" height="55" rx="3"/>
+                  <rect x="565" y="415" width="72" height="55" rx="3"/>
+                  <rect x="515" y="495" width="54" height="54" rx="27" fill="#3E4C59" stroke="#D99B26" stroke-width="1.4"/>
+                  <rect x="505" y="575" width="85" height="62" rx="3"/>
+                  <!-- West Railway & Micklegate Blocks -->
+                  <rect x="80" y="305" width="125" height="62" rx="4" fill="#3E4C59" stroke="#94A3B8" stroke-width="1.5"/>
+                  <rect x="80" y="390" width="95" height="55" rx="3"/>
+                  <rect x="195" y="390" width="85" height="55" rx="3"/>
+                  <rect x="95" y="475" width="85" height="65" rx="3"/>
+                  <rect x="200" y="475" width="90" height="65" rx="3"/>
+                  <rect x="105" y="565" width="95" height="60" rx="3"/>
+                  <rect x="220" y="565" width="85" height="60" rx="3"/>
+                </g>
+
+                <!-- Railway Tracks (West Approach to York Station) -->
+                <g stroke="#64748B" stroke-width="4" fill="none">
+                  <path d="M20 275C120 295 160 350 175 430C190 520 155 640 125 740"/>
+                  <path d="M32 270C132 290 172 345 187 425C202 515 167 635 137 740" stroke-dasharray="6 6" stroke="#CBD5E1" stroke-width="2"/>
+                </g>
+
+                <!-- River Ouse (Main Waterway North-West to South) -->
+                <path d="M180 0C215 120 265 230 365 335C445 420 465 550 485 760" stroke="#0EA5E9" stroke-width="34" fill="none" stroke-linecap="round"/>
+                <path d="M180 0C215 120 265 230 365 335C445 420 465 550 485 760" stroke="#38BDF8" stroke-width="22" fill="none" stroke-linecap="round" opacity="0.65"/>
+
+                <!-- River Foss (Eastern Tributary joining Ouse in South) -->
+                <path d="M845 0C810 150 755 290 675 425C625 510 565 585 478 635" stroke="#0EA5E9" stroke-width="16" fill="none" stroke-linecap="round"/>
+
+                <!-- Major Streets & Avenues Grid -->
+                <g stroke="#64748B" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <!-- Bootham / Gillygate / Lord Mayor's Walk -->
+                  <path d="M240 40L440 145L665 145L790 250"/>
+                  <!-- Lendal Bridge & Station Road -->
+                  <path d="M155 375L345 315L455 245L575 220"/>
+                  <!-- Ouse Bridge & Micklegate to Piccadilly -->
+                  <path d="M140 535L395 415L565 395L765 465"/>
+                  <!-- Skeldergate Bridge & Southern Ring -->
+                  <path d="M225 635L465 545L660 545L865 570"/>
+                  <!-- North-South Spine: Stonegate -> Coney St -> Castlegate -->
+                  <path d="M495 145L465 315L535 450L555 655"/>
+                  <!-- Shambles / Fossgate Spine -->
+                  <path d="M585 215L605 335L695 455L755 620"/>
+                </g>
+                <!-- Street Center Markings -->
+                <g stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="8 8" fill="none" opacity="0.65">
+                  <path d="M240 40L440 145L665 145L790 250"/>
+                  <path d="M155 375L345 315L455 245L575 220"/>
+                  <path d="M140 535L395 415L565 395L765 465"/>
+                  <path d="M225 635L465 545L660 545L865 570"/>
+                </g>
+
+                <!-- Medieval City Walls Perimeter (Iconic Golden-Amber Fortifications) -->
+                <path d="M425 110L675 120L875 275L855 510L655 555M385 410L235 445L205 585L395 575" stroke="#F59E0B" stroke-width="5.5" fill="none" stroke-linejoin="round"/>
+                <path d="M425 110L675 120L875 275L855 510L655 555M385 410L235 445L205 585L395 575" stroke="#78350F" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+
+                <!-- District Watermark Labels -->
+                <g fill="#94A3B8" font-family="JetBrains Mono, monospace" font-weight="700" font-size="11" letter-spacing="2" opacity="0.75">
+                  <text x="125" y="210">CLIFTON</text>
+                  <text x="485" y="82">MINSTER QUARTER</text>
+                  <text x="755" y="135">MONKGATE</text>
+                  <text x="760" y="385">WALMGATE</text>
+                  <text x="105" y="462">MICKLEGATE</text>
+                  <text x="535" y="675">CASTLEGATE</text>
+                  <text x="315" y="365" fill="#7DD3FC" transform="rotate(42 315,365)">RIVER OUSE</text>
+                </g>
+
+                <!-- 12 Well-Spaced Interactive Landmark Pins Layer -->
+                <g id="map-pins-layer"></g>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Landmark Inspector Panel (4 cols on desktop) -->
+          <aside class="lg:col-span-4 bg-white rounded-3xl p-6 border-2 border-york-border shadow-lg space-y-5">
+            <div id="map-inspector-content">
+              <!-- Populated dynamically by JS -->
+            </div>
+
+            <!-- Quick Landmark Selector Pills -->
+            <div class="pt-4 border-t border-york-border space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-[11px] uppercase tracking-wider font-bold text-york-navy">All 12 York Stops</span>
+                <span class="text-[11px] text-york-slate">Tap to inspect</span>
+              </div>
+              <div id="map-quick-list" class="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto pr-1">
+                <!-- Populated dynamically by JS -->
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 6. 7-QUESTION PERSONA QUIZ (#view-quiz)                             -->
+      <!-- =================================================================== -->
+      <section id="view-quiz" class="app-view hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 border-2 border-york-border shadow-lg space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-york-border pb-4">
+            <div>
+              <span class="font-mono text-xs uppercase tracking-widest text-york-crimson font-bold">
+                Interactive Traveler Profiling
+              </span>
+              <h2 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">
+                7-Question York Persona Quiz
+              </h2>
+            </div>
+            <span id="quiz-progress-badge" class="font-mono text-xs font-bold px-3.5 py-1.5 rounded-full bg-york-navy text-york-gold self-start sm:self-auto">
+              Question 1 of 7
+            </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-2.5 bg-york-parchment rounded-full overflow-hidden">
+            <div id="quiz-progress-bar" class="h-full bg-york-gold transition-all duration-300" style="width: 14.28%;"></div>
+          </div>
+
+          <!-- Quiz Container (Question or Final Persona Result) -->
+          <div id="quiz-body" class="space-y-6"></div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 7. CUSTOM TRIP BUILDER & PRINTABLE VIP PASS (#view-builder)         -->
+      <!-- =================================================================== -->
+      <section id="view-builder" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div class="space-y-1">
+          <span class="font-mono text-xs uppercase tracking-widest text-york-gold font-bold bg-york-navy px-3 py-1 rounded-full inline-block">
+            Bespoke Itinerary Configurator
+          </span>
+          <h2 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy pt-1">
+            Build Your Custom York Trip &amp; Official VIP Pass
+          </h2>
+          <p class="text-xs sm:text-sm text-york-slate">
+            Configure your party (including children and dogs!), select accommodation and landmarks, and generate a printable VIP boarding pass.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Form Column (7 cols) -->
+          <form id="trip-builder-form" onsubmit="event.preventDefault(); generateVipPass();" class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border-2 border-york-border shadow-md space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-york-navy mb-1.5">Lead Traveler / Teacher Name *</label>
+                <input id="tb-name" type="text" required placeholder="e.g., Prof. Elena Rossi" value="Prof. Elena Rossi" oninput="updateBuilderQuote()" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream focus:outline-none focus:border-york-navy text-sm font-medium"/>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-york-navy mb-1.5">Contact Email / School Group *</label>
+                <input id="tb-email" type="text" required placeholder="e.g., elena.rossi@school.edu" value="elena.rossi@liceo-york.edu" oninput="updateBuilderQuote()" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream focus:outline-none focus:border-york-navy text-sm font-medium"/>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-york-navy mb-1.5">Preferred Arrival Date</label>
+                <input id="tb-date" type="date" value="2027-04-14" oninput="updateBuilderQuote()" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream focus:outline-none focus:border-york-navy text-sm font-medium"/>
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-york-navy mb-1.5">Trip Duration (Days)</label>
+                <select id="tb-days" onchange="updateBuilderQuote()" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream focus:outline-none focus:border-york-navy text-sm font-medium">
+                  <option value="2">2 Days / 1 Night (Weekend Sprint)</option>
+                  <option value="3">3 Days / 2 Nights (Classic York)</option>
+                  <option value="4" selected>4 Days / 3 Nights (Grand Chronicle)</option>
+                  <option value="5">5 Days / 4 Nights (Royal Deep Dive)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Party Composition: Adults, Children, Dogs -->
+            <div class="grid grid-cols-3 gap-3 bg-york-cream p-4 rounded-2xl border border-york-border">
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-york-navy mb-1">Adults</label>
+                <input id="tb-adults" type="number" min="1" max="60" value="2" oninput="updateBuilderQuote()" class="w-full px-3 py-2 rounded-xl border border-york-border bg-white text-sm font-bold text-york-navy"/>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-york-navy mb-1">Children / Students</label>
+                <input id="tb-children" type="number" min="0" max="60" value="0" oninput="updateBuilderQuote()" class="w-full px-3 py-2 rounded-xl border border-york-border bg-white text-sm font-bold text-york-navy"/>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-york-forest mb-1">Dogs / Pets 🐾</label>
+                <input id="tb-dogs" type="number" min="0" max="10" value="0" oninput="updateBuilderQuote()" class="w-full px-3 py-2 rounded-xl border border-york-border bg-white text-sm font-bold text-york-forest"/>
+              </div>
+            </div>
+
+            <!-- Accommodation Tier -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-york-navy mb-1.5">Accommodation Tier</label>
+              <select id="tb-hotel" onchange="updateBuilderQuote()" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream focus:outline-none focus:border-york-navy text-sm font-medium">
+                <option value="Heritage Boutique Inn" data-rate="95">Heritage Boutique Inn (City Walls Quarter) — £95/night</option>
+                <option value="Riverside Georgian 4-Star" data-rate="135" selected>Riverside Georgian 4-Star (Ouse Views) — £135/night</option>
+                <option value="Cathedral Luxury Suite" data-rate="195">Cathedral Luxury Suite (Minster View) — £195/night</option>
+              </select>
+            </div>
+
+            <!-- Selectable York Landmarks -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold uppercase tracking-wider text-york-navy">Selected York Landmarks &amp; Experiences</label>
+                <span class="text-[11px] font-mono text-york-slate">Synced with City Map</span>
+              </div>
+              <div id="builder-landmarks-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-3 rounded-2xl bg-york-cream border border-york-border">
+                <!-- Populated dynamically by JS -->
+              </div>
+            </div>
+
+            <!-- Special Requests -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-york-navy mb-1.5">Special Requests (Dietary, Accessibility, Educational Focus)</label>
+              <textarea id="tb-notes" rows="2" placeholder="e.g., Vegetarian afternoon tea, focus on Roman Constantine history, dog-friendly pub stops..." oninput="updateBuilderQuote()" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream focus:outline-none focus:border-york-navy text-sm"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-4 rounded-2xl bg-york-gold hover:bg-york-goldLight text-york-navy font-extrabold text-sm uppercase tracking-wider shadow-lg transition cursor-pointer">
+              Generate Official VIP Pass →
+            </button>
+          </form>
+
+          <!-- Live Quote & Printable VIP Pass Column (5 cols) -->
+          <div class="lg:col-span-5 space-y-5">
+            <!-- Live Cost Breakdown Box -->
+            <div class="bg-york-navy text-york-cream rounded-3xl p-6 border-2 border-york-gold shadow-xl space-y-4 no-print">
+              <div class="flex items-center justify-between border-b border-york-gold/30 pb-3">
+                <span class="font-mono text-xs uppercase tracking-widest text-york-goldLight font-bold">Live Estimate</span>
+                <span id="quote-currency-note" class="font-mono text-xs text-slate-300">Currency: GBP (£)</span>
+              </div>
+              <div id="builder-quote-breakdown" class="space-y-2 text-xs sm:text-sm">
+                <!-- Populated dynamically -->
+              </div>
+              <div class="border-t border-york-gold/40 pt-3 flex items-baseline justify-between">
+                <span class="font-bold uppercase tracking-wider text-xs text-york-goldLight">Estimated Total</span>
+                <span id="builder-total-price" class="font-serif text-3xl font-extrabold text-york-gold">£0</span>
+              </div>
+            </div>
+
+            <!-- Printable VIP Pass Card -->
+            <div id="vip-pass-printable" class="bg-white rounded-3xl p-6 border-4 border-double border-york-gold shadow-xl space-y-4">
+              <div class="flex items-center justify-between border-b-2 border-york-navy pb-3">
+                <div>
+                  <div class="font-mono text-[10px] uppercase tracking-widest text-york-crimson font-bold">Official Boarding &amp; Concierge Pass</div>
+                  <h3 class="font-serif text-xl font-extrabold text-york-navy">DP Trip and Journey</h3>
+                </div>
+                <span class="px-3 py-1 rounded-xl bg-york-navy text-york-gold font-mono text-xs font-extrabold">VIP • YORK</span>
+              </div>
+
+              <div id="vip-pass-details" class="space-y-2.5 text-xs text-york-navy">
+                <!-- Populated dynamically -->
+              </div>
+
+              <div class="pt-3 border-t border-dashed border-york-border flex items-center justify-between text-[11px] text-york-slate">
+                <div>
+                  <div class="font-bold text-york-navy">Signed: Diego Lelario &amp; Pierluigi Lovaglio</div>
+                  <div>Co-Founders &amp; York Travel Directors</div>
+                </div>
+                <div class="font-mono font-bold text-york-forest">VERIFIED 2026/27</div>
+              </div>
+
+              <button type="button" onclick="window.print()" class="w-full py-3 rounded-2xl bg-york-navy hover:bg-york-navyLight text-york-cream font-bold text-xs uppercase tracking-wider shadow transition cursor-pointer no-print">
+                Print VIP Pass (PDF / Paper)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 8. HIDDEN GEMS & INTERACTIVE PACKING CHECKLIST (#view-gems)         -->
+      <!-- =================================================================== -->
+      <section id="view-gems" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <!-- Hidden Gems Grid -->
+        <div class="space-y-4">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-widest text-york-crimson font-bold">Insider Local Secrets</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">
+              York's Hidden Snickelways &amp; Secret Corners
+            </h2>
+            <p class="text-xs sm:text-sm text-york-slate">
+              Beyond the famous landmarks lie narrow medieval alleyways ("snickelways"), Roman cellars, and riverside delicacies curated by our local guides.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5">
+              <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-navy text-york-gold">Medieval Alleyways</span>
+              <h3 class="font-serif text-lg font-bold text-york-navy">The Snickelways of York</h3>
+              <p class="text-xs text-york-slate leading-relaxed">
+                Over 50 named medieval footpaths—including <em>Mad Alice Lane</em> and <em>Lund's Court</em>—weave between Stonegate and The Shambles like a real-life labyrinth.
+              </p>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5">
+              <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-crimson/10 text-york-crimson">Roman Subterranean</span>
+              <h3 class="font-serif text-lg font-bold text-york-navy">Treasurer's House Roman Cellar</h3>
+              <p class="text-xs text-york-slate leading-relaxed">
+                Descend beneath a stately townhouse beside York Minster to stand on the original Roman road <em>Via Decumana</em>—site of York's most famous legionnaire sighting.
+              </p>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5">
+              <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-forest/10 text-york-forest">Golden Hour Walk</span>
+              <h3 class="font-serif text-lg font-bold text-york-navy">Bar Walls Sunrise Ramparts</h3>
+              <p class="text-xs text-york-slate leading-relaxed">
+                Walk the elevated limestone section between Bootham Bar and Monk Bar at 8:00 AM for unobstructed, crowd-free views of York Minster's flying buttresses.
+              </p>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5">
+              <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-gold/25 text-york-navy">Yorkshire Gastronomy</span>
+              <h3 class="font-serif text-lg font-bold text-york-navy">Bettys Fat Rascal Scones</h3>
+              <p class="text-xs text-york-slate leading-relaxed">
+                Order a warm "Fat Rascal" fruit scone with Yorkshire clotted cream at St. Helen's Square—a 1919 York tearoom institution.
+              </p>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5">
+              <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-navy/10 text-york-navy">Street Food Courtyard</span>
+              <h3 class="font-serif text-lg font-bold text-york-navy">Shambles Market Food Court</h3>
+              <p class="text-xs text-york-slate leading-relaxed">
+                Tucked right behind the leaning Tudor shopfronts, this open-air market serves roast Yorkshire pudding wraps, artisan pies, and local fudge.
+              </p>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5">
+              <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-forest/10 text-york-forest">Feline Trail</span>
+              <h3 class="font-serif text-lg font-bold text-york-navy">The York Cat Trail</h3>
+              <p class="text-xs text-york-slate leading-relaxed">
+                Spot over 20 sculpted cats perched on historic roofs and ledges across the city—originally placed centuries ago to ward off plague-carrying rats and evil spirits.
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- Interactive Categorized York Packing Checklist -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-york-border shadow-md space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-york-border pb-4">
+            <div>
+              <span class="font-mono text-xs uppercase tracking-widest text-york-forest font-bold">Smart Preparation</span>
+              <h3 class="font-serif text-2xl font-extrabold text-york-navy">Interactive York Packing Checklist</h3>
+            </div>
+            <div class="text-right">
+              <div id="packing-progress-text" class="font-mono text-xs font-bold text-york-navy">0 / 12 Packed (0%)</div>
+              <div class="w-44 h-2.5 bg-york-parchment rounded-full overflow-hidden mt-1">
+                <div id="packing-progress-bar" class="h-full bg-york-forest transition-all duration-300" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="packing-categories-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- Add Custom Packing Item -->
+          <form onsubmit="event.preventDefault(); addCustomPackingItem();" class="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-york-border">
+            <input id="custom-pack-input" type="text" placeholder="Add your own item (e.g., Sketchbook, Dog leash, Student ID)..." class="flex-1 px-4 py-2.5 rounded-xl border border-york-border bg-york-cream text-sm focus:outline-none focus:border-york-navy"/>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-york-navy hover:bg-york-navyLight text-york-cream font-bold text-xs uppercase tracking-wider cursor-pointer">
+              + Add to Checklist
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 9. ABOUT US (#view-about) — DIEGO LELARIO & PIERLUIGI LOVAGLIO      -->
+      <!-- =================================================================== -->
+      <section id="view-about" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <!-- Agency Mission Banner -->
+        <div class="bg-york-navy text-york-cream rounded-3xl p-6 sm:p-10 border-2 border-york-gold shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-8 space-y-4">
+            <span class="font-mono text-xs uppercase tracking-widest text-york-goldLight font-bold">
+              Our Story • Founded by Diego Lelario &amp; Pierluigi Lovaglio
+            </span>
+            <h2 class="font-serif text-3xl sm:text-4xl font-extrabold leading-tight">
+              Two Founders, One Passion: Making York Unforgettable
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              <strong>DP Trip and Journey</strong> takes its name directly from its co-founders and York Travel Directors, <strong class="text-york-goldLight">Diego Lelario</strong> ("D") and <strong class="text-york-goldLight">Pierluigi Lovaglio</strong> ("P"). Frustrated by generic, rushed bus tours, Diego and Pierluigi designed a bespoke travel studio dedicated to immersive storytelling, walkable city cartography, and stress-free logistics for schools, families, and cultural travelers.
+            </p>
+          </div>
+          <div class="lg:col-span-4 grid grid-cols-1 gap-3">
+            <div class="bg-white/10 rounded-2xl p-4 border border-york-gold/40">
+              <div class="font-serif text-2xl font-extrabold text-york-gold">99.4%</div>
+              <div class="text-xs text-slate-200">Traveler &amp; Educator Satisfaction</div>
+            </div>
+            <div class="bg-white/10 rounded-2xl p-4 border border-york-gold/40">
+              <div class="font-serif text-2xl font-extrabold text-york-gold">1,400+</div>
+              <div class="text-xs text-slate-200">Bespoke York Itineraries Crafted</div>
+            </div>
+            <div class="bg-white/10 rounded-2xl p-4 border border-york-gold/40">
+              <div class="font-serif text-2xl font-extrabold text-york-gold">24/7</div>
+              <div class="text-xs text-slate-200">On-the-Ground York Concierge</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Founders & York Travel Directors Spotlight -->
+        <div class="space-y-4">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-widest text-york-crimson font-bold">Founders &amp; York Travel Directors</span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">
+              Meet Diego Lelario &amp; Pierluigi Lovaglio
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Founder 1: Diego Lelario -->
+            <article class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-york-navy/25 shadow-md flex flex-col sm:flex-row items-start gap-5">
+              <div class="shrink-0">
+                <svg class="w-20 h-20" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="88" height="88" rx="22" fill="#0F1E36"/>
+                  <rect x="4" y="4" width="80" height="80" rx="18" stroke="#D99B26" stroke-width="2"/>
+                  <text x="44" y="53" text-anchor="middle" fill="#F3C969" font-family="Cinzel, Georgia, serif" font-weight="800" font-size="28">DL</text>
+                </svg>
+              </div>
+              <div class="space-y-2.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h4 class="font-serif text-xl font-extrabold text-york-navy">Diego Lelario</h4>
+                  <span class="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-york-navy text-york-gold">
+                    Co-Founder &amp; York Travel Director
+                  </span>
+                </div>
+                <p class="text-xs sm:text-sm text-york-slate leading-relaxed">
+                  Lead Historical Cartographer &amp; Roman-Viking Specialist. Diego designs our walkable city routes, Bar Walls expeditions, and interactive educational modules so students and travelers experience York's history right where it happened.
+                </p>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[10px] font-bold px-2.5 py-1 rounded-lg bg-york-cream border border-york-border text-york-navy">Roman Eboracum</span>
+                  <span class="font-mono text-[10px] font-bold px-2.5 py-1 rounded-lg bg-york-cream border border-york-border text-york-navy">City Walls Logistics</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- Founder 2: Pierluigi Lovaglio -->
+            <article class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-york-crimson/25 shadow-md flex flex-col sm:flex-row items-start gap-5">
+              <div class="shrink-0">
+                <svg class="w-20 h-20" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="88" height="88" rx="22" fill="#B83232"/>
+                  <rect x="4" y="4" width="80" height="80" rx="18" stroke="#F3C969" stroke-width="2"/>
+                  <text x="44" y="53" text-anchor="middle" fill="#FAF7F0" font-family="Cinzel, Georgia, serif" font-weight="800" font-size="28">PL</text>
+                </svg>
+              </div>
+              <div class="space-y-2.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h4 class="font-serif text-xl font-extrabold text-york-navy">Pierluigi Lovaglio</h4>
+                  <span class="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full bg-york-crimson text-york-cream">
+                    Co-Founder &amp; York Travel Director
+                  </span>
+                </div>
+                <p class="text-xs sm:text-sm text-york-slate leading-relaxed">
+                  Curator of Gothic Architecture, Folklore &amp; Guest Experience. Pierluigi crafts our Minster tours, Shambles &amp; Snickelway trails, evening ghost storytelling, and tailored accommodation for school groups, families, and pets.
+                </p>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span class="font-mono text-[10px] font-bold px-2.5 py-1 rounded-lg bg-york-cream border border-york-border text-york-navy">York Minster &amp; Gothic</span>
+                  <span class="font-mono text-[10px] font-bold px-2.5 py-1 rounded-lg bg-york-cream border border-york-border text-york-navy">Folklore &amp; Concierge</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- Verified Traveler Reviews -->
+        <div class="space-y-4">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-widest text-york-forest font-bold">Verified Traveler Reviews</span>
+            <h3 class="font-serif text-2xl font-extrabold text-york-navy">What Educators &amp; Travelers Say</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-york-gold text-sm font-bold">★★★★★ 5.0</span>
+                <span class="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-york-forest/10 text-york-forest font-bold">Verified School Group</span>
+              </div>
+              <p class="text-xs text-york-slate leading-relaxed italic">
+                "Diego and Pierluigi turned our 4-day educational trip to York into the highlight of the academic year. Every single student was captivated from York Minster to the Viking excavations."
+              </p>
+              <div class="pt-2 border-t border-york-border text-xs">
+                <div class="font-bold text-york-navy">Prof. Clara Conti</div>
+                <div class="text-york-slate">Humanities Department • 28 Students</div>
+              </div>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-york-gold text-sm font-bold">★★★★★ 5.0</span>
+                <span class="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-york-forest/10 text-york-forest font-bold">Verified Family &amp; Dog Trip</span>
+              </div>
+              <p class="text-xs text-york-slate leading-relaxed italic">
+                "Traveling with two kids and our golden retriever was effortless thanks to DP Trip and Journey. Their dog-friendly pub list and custom VIP pass worked like magic."
+              </p>
+              <div class="pt-2 border-t border-york-border text-xs">
+                <div class="font-bold text-york-navy">Arthur &amp; Hannah Pendelton</div>
+                <div class="text-york-slate">Edinburgh • 3-Night Riverside Stay</div>
+              </div>
+            </article>
+
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-york-gold text-sm font-bold">★★★★★ 5.0</span>
+                <span class="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-york-forest/10 text-york-forest font-bold">Verified Cultural Explorer</span>
+              </div>
+              <p class="text-xs text-york-slate leading-relaxed italic">
+                "The snickelways walk and Treasurer's House Roman cellar tour revealed a side of York we never would have found on our own. Pure five-star craftsmanship."
+              </p>
+              <div class="pt-2 border-t border-york-border text-xs">
+                <div class="font-bold text-york-navy">Dr. Julian Mercer</div>
+                <div class="text-york-slate">Oxford • Grand York Chronicle</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 10. SEARCHABLE FUN FACTS VAULT (#view-facts)                        -->
+      <!-- =================================================================== -->
+      <section id="view-facts" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-widest text-york-crimson font-bold">2,000 Years of Trivia</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">York Historical Fun Facts Vault</h2>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <input id="facts-search-input" type="text" placeholder="Search Constantine, Vikings, Guy Fawkes..." oninput="renderFunFacts()" class="px-4 py-2 rounded-xl border border-york-border bg-white text-xs sm:text-sm focus:outline-none focus:border-york-navy"/>
+            <select id="facts-category-filter" onchange="renderFunFacts()" class="px-3.5 py-2 rounded-xl border border-york-border bg-white text-xs sm:text-sm font-semibold text-york-navy">
+              <option value="ALL">All Eras</option>
+              <option value="Roman Eboracum">Roman Eboracum</option>
+              <option value="Viking Jorvik">Viking Jorvik</option>
+              <option value="Medieval & Tudor">Medieval &amp; Tudor</option>
+              <option value="Ghosts & Legends">Ghosts &amp; Legends</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="fun-facts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 11. INTERACTIVE FUTURE IDEAS BOARD (#view-future)                   -->
+      <!-- =================================================================== -->
+      <section id="view-future" class="app-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div class="space-y-1">
+          <span class="font-mono text-xs uppercase tracking-widest text-york-forest font-bold">DP Trip &amp; Journey Roadmap</span>
+          <h2 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">
+            Future Expansion Routes &amp; Community Proposals
+          </h2>
+          <p class="text-xs sm:text-sm text-york-slate">
+            Vote for the next rail-connected northern extension Diego &amp; Pierluigi should launch next, or propose your own route!
+          </p>
+        </div>
+
+        <div id="future-ideas-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+        <!-- Propose New Route Form -->
+        <form onsubmit="event.preventDefault(); proposeFutureIdea();" class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-md grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          <div class="md:col-span-4">
+            <label class="block text-xs font-bold uppercase text-york-navy mb-1">Proposed Destination / Extension</label>
+            <input id="idea-title-input" type="text" required placeholder="e.g., Durham Cathedral & Holy Island" class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream text-sm"/>
+          </div>
+          <div class="md:col-span-5">
+            <label class="block text-xs font-bold uppercase text-york-navy mb-1">Why Teachers &amp; Travelers Will Love It</label>
+            <input id="idea-desc-input" type="text" required placeholder="e.g., 45 minutes north of York on the East Coast Main Line..." class="w-full px-4 py-2.5 rounded-xl border border-york-border bg-york-cream text-sm"/>
+          </div>
+          <div class="md:col-span-3">
+            <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-york-gold hover:bg-york-goldLight text-york-navy font-extrabold text-xs uppercase tracking-wider shadow cursor-pointer">
+              + Submit Route Idea
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-york-navy text-york-cream border-t-2 border-york-gold py-6 px-4 sm:px-6 lg:px-8 text-xs no-print">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div>
+          <strong class="text-york-gold">DP Trip and Journey</strong> — York Bespoke Travel • Founders &amp; Directors: <strong>Diego Lelario &amp; Pierluigi Lovaglio</strong>
+        </div>
+        <div class="font-mono text-york-goldLight">
+          Live Exchange Rate: 1 GBP (£) = 1.17 EUR (€)
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VANILLA JAVASCRIPT APPLICATION LOGIC                                  -->
+  <!-- ===================================================================== -->
+  <script>
+    // -----------------------------------------------------------------------
+    // 1. GLOBAL STATE & CURRENCY ENGINE (1 GBP = 1.17 EUR)
+    // -----------------------------------------------------------------------
+    let currentCurrency = 'GBP';
+    const GBP_TO_EUR = 1.17;
+
+    function formatPrice(gbpAmount) {
+      if (currentCurrency === 'GBP') {
+        return '£' + Math.round(gbpAmount).toLocaleString('en-GB');
+      }
+      return '€' + Math.round(gbpAmount * GBP_TO_EUR).toLocaleString('en-IE');
+    }
+
+    function toggleCurrency() {
+      currentCurrency = currentCurrency === 'GBP' ? 'EUR' : 'GBP';
+      const label = document.getElementById('currency-badge-label');
+      if (label) {
+        label.textContent = currentCurrency === 'GBP' ? 'GBP (£)' : 'EUR (€)';
+      }
+
+      // Update any static data-gbp elements
+      document.querySelectorAll('[data-gbp]').forEach(el => {
+        const val = parseFloat(el.getAttribute('data-gbp'));
+        if (!isNaN(val)) el.textContent = formatPrice(val);
+      });
+
+      // Re-render dynamic views that show prices
+      renderMapInspector(selectedLandmarkId);
+      renderQuiz();
+      renderBuilderLandmarks();
+      updateBuilderQuote();
+    }
+
+    // -----------------------------------------------------------------------
+    // 2. SCREEN & TAB NAVIGATION
+    // -----------------------------------------------------------------------
+    function showWelcomeScreen() {
+      document.getElementById('welcome-screen').classList.remove('hidden');
+      document.getElementById('choice-hub').classList.add('hidden');
+      document.getElementById('main-app').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function enterChoiceHub() {
+      document.getElementById('welcome-screen').classList.add('hidden');
+      document.getElementById('choice-hub').classList.remove('hidden');
+      document.getElementById('main-app').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function enterMainApp(initialTab = 'overview') {
+      document.getElementById('welcome-screen').classList.add('hidden');
+      document.getElementById('choice-hub').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+      switchTab(initialTab);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.app-view').forEach(sec => sec.classList.add('hidden'));
+      const target = document.getElementById('view-' + tabName);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabName) {
+          btn.classList.add('bg-york-gold', 'text-york-navy');
+          btn.classList.remove('text-york-cream', 'hover:bg-white/10');
+        } else {
+          btn.classList.remove('bg-york-gold', 'text-york-navy');
+          btn.classList.add('text-york-cream', 'hover:bg-white/10');
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleMobileMenu(forceState) {
+      const menu = document.getElementById('mobile-nav');
+      if (typeof forceState === 'boolean') {
+        menu.classList.toggle('hidden', !forceState);
+      } else {
+        menu.classList.toggle('hidden');
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. YORK LANDMARKS DATA (12 WELL-SPACED COORDINATES ON GTA MAP)
+    // -----------------------------------------------------------------------
+    const yorkLandmarks = [
+      {
+        id: 'minster',
+        num: 1,
+        name: 'York Minster',
+        sector: 'North-Central • Minster Quarter',
+        era: 'Medieval Gothic',
+        eraColor: '#D99B26',
+        x: 512,
+        y: 202,
+        walkTime: '2h 00m visit',
+        priceGbp: 18,
+        tip: 'Climb the 275 steps of the Central Tower for a 360° panorama across the Vale of York, and inspect the Great East Window.',
+        desc: 'Northern Europe’s largest Gothic cathedral, featuring the world’s largest expanse of medieval stained glass and a Roman fortress undercroft.'
+      },
+      {
+        id: 'shambles',
+        num: 2,
+        name: 'The Shambles',
+        sector: 'Central-East • Old Quarter',
+        era: 'Medieval & Tudor',
+        eraColor: '#B83232',
+        x: 615,
+        y: 278,
+        walkTime: '45m stroll',
+        priceGbp: 0,
+        tip: 'Visit before 9:30 AM to photograph the overhanging 14th-century timber-framed gables without daytime crowds.',
+        desc: 'A remarkably preserved medieval butcher street whose upper storeys lean so close together you can almost touch across the cobbles.'
+      },
+      {
+        id: 'clifford',
+        num: 3,
+        name: "Clifford's Tower",
+        sector: 'South-Central • Castle Mound',
+        era: 'Medieval Norman',
+        eraColor: '#D99B26',
+        x: 542,
+        y: 522,
+        walkTime: '1h 00m visit',
+        priceGbp: 11,
+        tip: 'Walk the newly installed timber roof deck for elevated views of the River Ouse and Skeldergate Bridge.',
+        desc: 'The iconic quatrefoil stone keep of York Castle, rebuilt by King Henry III in the 13th century atop William the Conqueror’s motte.'
+      },
+      {
+        id: 'jorvik',
+        num: 4,
+        name: 'JORVIK Viking Centre',
+        sector: 'South-East • Coppergate',
+        era: 'Viking Jorvik',
+        eraColor: '#0EA5E9',
+        x: 675,
+        y: 435,
+        walkTime: '1h 15m visit',
+        priceGbp: 16,
+        tip: 'Pre-book timed entry slots through DP Trip & Journey to skip the Coppergate queue.',
+        desc: 'Built directly over the famous 1970s archaeological dig, featuring a time-capsule ride through 10th-century Viking York.'
+      },
+      {
+        id: 'railway',
+        num: 5,
+        name: 'National Railway Museum',
+        sector: 'West • Leeman Road (Across Ouse)',
+        era: 'Victorian & Industrial',
+        eraColor: '#1F6E58',
+        x: 145,
+        y: 335,
+        walkTime: '2h 30m visit',
+        priceGbp: 0,
+        tip: 'Stand beside the Mallard (world’s fastest steam locomotive at 126 mph) and step inside Queen Victoria’s Royal Saloon.',
+        desc: 'Home to over 100 historic locomotives, bullet trains, and royal carriages celebrating Britain’s invention of modern rail travel.'
+      },
+      {
+        id: 'castle',
+        num: 6,
+        name: 'York Castle Museum',
+        sector: 'South • Eye of York',
+        era: 'Victorian & Social',
+        eraColor: '#1F6E58',
+        x: 562,
+        y: 615,
+        walkTime: '1h 45m visit',
+        priceGbp: 15,
+        tip: 'Explore Kirkgate, a full-scale recreated Victorian cobblestone street complete with gas lamps, apothecary, and Hansom cab.',
+        desc: 'Housed in two former 18th-century debtors’ prisons, showcasing 400 years of everyday British life and Dick Turpin’s original cell.'
+      },
+      {
+        id: 'museum',
+        num: 7,
+        name: 'Yorkshire Museum & Gardens',
+        sector: 'North-West • Riverbank',
+        era: 'Roman Eboracum',
+        eraColor: '#B83232',
+        x: 315,
+        y: 235,
+        walkTime: '1h 30m visit',
+        priceGbp: 10,
+        tip: 'Walk outside to inspect the Multangular Tower—an intact 4th-century Roman corner fortress wall.',
+        desc: 'Set amidst the atmospheric ruins of St. Mary’s Abbey, housing Roman sculptures, Viking hoards, and medieval treasures.'
+      },
+      {
+        id: 'bootham',
+        num: 8,
+        name: 'Bootham Bar & City Walls',
+        sector: 'North • North Gate',
+        era: 'Roman & Medieval',
+        eraColor: '#D99B26',
+        x: 425,
+        y: 112,
+        walkTime: '50m rampart walk',
+        priceGbp: 0,
+        tip: 'Enter the elevated ramparts right beside Bootham Bar for the finest framed view of York Minster’s towers.',
+        desc: 'Standing on the exact site of the north-western gateway to Roman Eboracum, guarding the approach from Scotland for 1,900 years.'
+      },
+      {
+        id: 'micklegate',
+        num: 9,
+        name: 'Micklegate Bar',
+        sector: 'South-West • Royal Gate',
+        era: 'Medieval & Tudor',
+        eraColor: '#B83232',
+        x: 208,
+        y: 535,
+        walkTime: '40m visit',
+        priceGbp: 6,
+        tip: 'Look up at the stone battlements where reigning monarchs still pause to ask the Lord Mayor’s permission to enter York.',
+        desc: 'The grand four-storey southern ceremonial gateway where English kings and queens historically entered the city.'
+      },
+      {
+        id: 'chocolate',
+        num: 10,
+        name: "York's Chocolate Story",
+        sector: 'Central • King’s Square',
+        era: 'Georgian & Industrial',
+        eraColor: '#D99B26',
+        x: 492,
+        y: 318,
+        walkTime: '1h 15m tour',
+        priceGbp: 19,
+        tip: 'Learn how York’s Quaker families (Rowntree’s and Terry’s) invented KitKat, Smarties, and Terry’s Chocolate Orange.',
+        desc: 'An interactive guided tasting journey revealing why York—not London—became Britain’s historic capital of chocolate.'
+      },
+      {
+        id: 'merchant',
+        num: 11,
+        name: "Merchant Adventurers' Hall",
+        sector: 'East • Fossgate',
+        era: 'Medieval Guildhall',
+        eraColor: '#1F6E58',
+        x: 785,
+        y: 345,
+        walkTime: '1h 00m visit',
+        priceGbp: 8,
+        tip: 'Admire the massive ship-timber roof trusses built in 1357 without a single iron nail.',
+        desc: 'One of the best-preserved medieval guildhalls in the world, continuously used by York merchants since the 14th century.'
+      },
+      {
+        id: 'fleece',
+        num: 12,
+        name: 'The Golden Fleece',
+        sector: 'Central-South • Pavement',
+        era: 'Haunted & Tudor',
+        eraColor: '#B83232',
+        x: 618,
+        y: 368,
+        walkTime: '45m evening stop',
+        priceGbp: 0,
+        tip: 'Ideal meeting point for our evening lantern Ghost Walk—famous for its sloping Tudor floorboards and 1503 charter.',
+        desc: 'Licensed in 1503 and renowned as York’s most famously haunted historic coaching inn.'
+      }
+    ];
+
+    let selectedLandmarkId = 'minster';
+    let selectedTripLandmarks = new Set(['minster', 'shambles', 'clifford', 'jorvik', 'railway', 'chocolate']);
+
+    // Map Pan & Zoom State
+    let mapScale = 1;
+    let mapTranslateX = 0;
+    let mapTranslateY = 0;
+    let isDraggingMap = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    function applyMapTransform() {
+      const group = document.getElementById('map-transform-group');
+      if (group) {
+        group.setAttribute('transform', `translate(${mapTranslateX}, ${mapTranslateY}) scale(${mapScale})`);
+      }
+    }
+
+    function zoomMap(delta) {
+      mapScale = Math.min(2.2, Math.max(0.75, +(mapScale + delta).toFixed(2)));
+      applyMapTransform();
+    }
+
+    function resetMapView() {
+      mapScale = 1;
+      mapTranslateX = 0;
+      mapTranslateY = 0;
+      applyMapTransform();
+    }
+
+    function initMapPanHandlers() {
+      const container = document.getElementById('map-container');
+      if (!container) return;
+
+      container.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.landmark-pin-group')) return;
+        isDraggingMap = true;
+        dragStartX = e.clientX - mapTranslateX;
+        dragStartY = e.clientY - mapTranslateY;
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isDraggingMap) return;
+        mapTranslateX = Math.max(-320, Math.min(320, e.clientX - dragStartX));
+        mapTranslateY = Math.max(-240, Math.min(240, e.clientY - dragStartY));
+        applyMapTransform();
+      });
+
+      window.addEventListener('pointerup', () => {
+        isDraggingMap = false;
+      });
+    }
+
+    function renderMapPins() {
+      const layer = document.getElementById('map-pins-layer');
+      const quickList = document.getElementById('map-quick-list');
+      if (!layer || !quickList) return;
+
+      layer.innerHTML = '';
+      quickList.innerHTML = '';
+
+      yorkLandmarks.forEach(lm => {
+        const isSelected = lm.id === selectedLandmarkId;
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'landmark-pin-group cursor-pointer');
+        g.setAttribute('transform', `translate(${lm.x}, ${lm.y})`);
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectLandmark(lm.id);
+        });
+
+        // Pulse ring if active
+        if (isSelected) {
+          const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          pulse.setAttribute('r', '22');
+          pulse.setAttribute('fill', '#F3C969');
+          pulse.setAttribute('class', 'map-pin-pulse');
+          g.appendChild(pulse);
+        }
+
+        // Pin circle
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('r', isSelected ? '15' : '12.5');
+        circle.setAttribute('fill', isSelected ? '#D99B26' : '#0F1E36');
+        circle.setAttribute('stroke', isSelected ? '#FAF7F0' : '#F3C969');
+        circle.setAttribute('stroke-width', isSelected ? '3' : '2');
+        g.appendChild(circle);
+
+        // Pin Number
+        const numText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        numText.setAttribute('y', '4');
+        numText.setAttribute('text-anchor', 'middle');
+        numText.setAttribute('fill', isSelected ? '#0F1E36' : '#FAF7F0');
+        numText.setAttribute('font-family', 'JetBrains Mono, monospace');
+        numText.setAttribute('font-weight', '800');
+        numText.setAttribute('font-size', '11');
+        numText.textContent = lm.num;
+        g.appendChild(numText);
+
+        // Crisp Label Pill underneath pin
+        const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const labelWidth = lm.name.length * 6.2 + 12;
+        labelBg.setAttribute('x', -labelWidth / 2);
+        labelBg.setAttribute('y', '17');
+        labelBg.setAttribute('width', labelWidth);
+        labelBg.setAttribute('height', '16');
+        labelBg.setAttribute('rx', '5');
+        labelBg.setAttribute('fill', isSelected ? '#D99B26' : '#0F1E36');
+        labelBg.setAttribute('fill-opacity', '0.92');
+        labelBg.setAttribute('stroke', '#F3C969');
+        labelBg.setAttribute('stroke-width', '0.8');
+        g.appendChild(labelBg);
+
+        const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        labelText.setAttribute('y', '28');
+        labelText.setAttribute('text-anchor', 'middle');
+        labelText.setAttribute('fill', isSelected ? '#0F1E36' : '#FAF7F0');
+        labelText.setAttribute('font-family', 'Inter, sans-serif');
+        labelText.setAttribute('font-weight', '700');
+        labelText.setAttribute('font-size', '9.5');
+        labelText.textContent = lm.name;
+        g.appendChild(labelText);
+
+        layer.appendChild(g);
+
+        // Quick List Pill
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectLandmark(lm.id);
+        btn.className = `text-left px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition truncate cursor-pointer border ${
+          isSelected
+            ? 'bg-york-navy text-york-gold border-york-navy font-bold'
+            : 'bg-york-cream hover:bg-york-parchment text-york-navy border-york-border'
+        }`;
+        btn.textContent = `${lm.num}. ${lm.name}`;
+        quickList.appendChild(btn);
+      });
+    }
+
+    function selectLandmark(id) {
+      selectedLandmarkId = id;
+      renderMapPins();
+      renderMapInspector(id);
+    }
+
+    function renderMapInspector(id) {
+      const box = document.getElementById('map-inspector-content');
+      const lm = yorkLandmarks.find(item => item.id === id) || yorkLandmarks[0];
+      if (!box || !lm) return;
+
+      const isAdded = selectedTripLandmarks.has(lm.id);
+
+      box.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-mono text-[11px] font-bold px-3 py-1 rounded-full text-white" style="background:${lm.eraColor}">
+              #${lm.num} • ${lm.era}
+            </span>
+            <span class="font-mono text-xs font-bold text-york-navy">
+              ${lm.priceGbp === 0 ? 'FREE ENTRY' : formatPrice(lm.priceGbp)}
+            </span>
+          </div>
+
+          <div>
+            <h3 class="font-serif text-2xl font-extrabold text-york-navy">${lm.name}</h3>
+            <div class="font-mono text-[11px] text-york-slate mt-0.5">${lm.sector} • ${lm.walkTime}</div>
+          </div>
+
+          <p class="text-xs sm:text-sm text-york-slate leading-relaxed">
+            ${lm.desc}
+          </p>
+
+          <div class="bg-york-cream rounded-2xl p-3.5 border border-york-gold/60 space-y-1">
+            <div class="font-mono text-[10px] uppercase tracking-wider font-bold text-york-crimson">Guide Insider Tip</div>
+            <p class="text-xs text-york-navy leading-relaxed">${lm.tip}</p>
+          </div>
+
+          <button type="button" onclick="toggleLandmarkInTrip('${lm.id}')" class="w-full py-3 rounded-2xl font-extrabold text-xs uppercase tracking-wider shadow transition cursor-pointer ${
+            isAdded
+              ? 'bg-york-forest text-white hover:opacity-95'
+              : 'bg-york-gold hover:bg-york-goldLight text-york-navy'
+          }">
+            ${isAdded ? '✓ Added to Your Trip Itinerary' : '+ Add to Trip Itinerary'}
+          </button>
+        </div>
+      `;
+    }
+
+    function toggleLandmarkInTrip(id) {
+      if (selectedTripLandmarks.has(id)) {
+        selectedTripLandmarks.delete(id);
+      } else {
+        selectedTripLandmarks.add(id);
+      }
+      renderMapInspector(id);
+      renderBuilderLandmarks();
+      updateBuilderQuote();
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. 7-QUESTION PERSONA QUIZ WITH "DID YOU KNOW?" NOTES
+    // -----------------------------------------------------------------------
+    const quizQuestions = [
+      {
+        q: '1. You step off the train at York Station. Where do your feet lead you first?',
+        didYouKnow: 'In 306 AD, Constantine the Great was proclaimed Roman Emperor right inside York (Eboracum) after his father Constantius Chlorus died there.',
+        options: [
+          { text: 'Straight to the Roman Multangular Tower & ancient fortress walls', persona: 'roman' },
+          { text: 'Down to the riverside quays where Viking longships once docked', persona: 'viking' },
+          { text: 'Toward the soaring Gothic spires of York Minster', persona: 'medieval' },
+          { text: 'Into a shadowy Tudor alleyway for local ghost folklore', persona: 'ghost' }
+        ]
+      },
+      {
+        q: '2. Which historical artifact would you most love to examine up close?',
+        didYouKnow: 'York’s Viking name "Jorvik" gradually evolved over centuries into "York"—and dozens of York streets still end in "-gate" (from Old Norse "gata", meaning street).',
+        options: [
+          { text: 'A 4th-century Roman legionary inscription & marble bust', persona: 'roman' },
+          { text: 'The Coppergate Helmet—one of the best-preserved Anglo-Scandinavian helmets ever found', persona: 'viking' },
+          { text: 'The 15th-century Great East Window stained glass panels', persona: 'medieval' },
+          { text: 'An 18th-century apothecary ledger from Dick Turpin’s prison', persona: 'ghost' }
+        ]
+      },
+      {
+        q: '3. What is your ideal afternoon pace in a historic European city?',
+        didYouKnow: 'York Minster’s Great East Window is roughly the size of a tennis court and was crafted by master glazier John Thornton between 1405 and 1408.',
+        options: [
+          { text: 'Tracing the exact geometric layout of the Roman legionary camp', persona: 'roman' },
+          { text: 'Interactive archaeology & hands-on maritime heritage', persona: 'viking' },
+          { text: 'Afternoon tea beside medieval guildhalls & rose gardens', persona: 'medieval' },
+          { text: 'Exploring hidden snickelways before a lantern-lit twilight walk', persona: 'ghost' }
+        ]
+      },
+      {
+        q: '4. Which famous figure connected to York fascinates you most?',
+        didYouKnow: 'Guy Fawkes—famous for the 1605 Gunpowder Plot—was born and baptized in York in 1570 at St. Michael le Belfrey, right next to York Minster.',
+        options: [
+          { text: 'Emperor Septimius Severus & Constantine the Great', persona: 'roman' },
+          { text: 'Eric Bloodaxe, the last Viking King of Jorvik', persona: 'viking' },
+          { text: 'King Henry III & the medieval master masons of York', persona: 'medieval' },
+          { text: 'Guy Fawkes & the phantom Roman legionnaires of Treasurer’s House', persona: 'ghost' }
+        ]
+      },
+      {
+        q: '5. Pick your dream York evening experience:',
+        didYouKnow: 'During the English Civil War in 1644, York’s medieval City Walls withstood a dramatic siege—and today remain the longest intact town walls in England.',
+        options: [
+          { text: 'Sunset walk along the Roman-foundation ramparts at Bootham Bar', persona: 'roman' },
+          { text: 'Twilight boat cruise along the River Ouse', persona: 'viking' },
+          { text: 'Choral Evensong echoing beneath York Minster’s stone vaults', persona: 'medieval' },
+          { text: 'Fireside storytelling at The Golden Fleece (est. 1503)', persona: 'ghost' }
+        ]
+      },
+      {
+        q: '6. What kind of souvenir earns a spot in your suitcase?',
+        didYouKnow: 'Unlike many British cities, York’s sweet fame comes from Quaker chocolate pioneers Rowntree’s and Terry’s—makers of KitKat and the Chocolate Orange.',
+        options: [
+          { text: 'A detailed cartographic map of Roman Britain', persona: 'roman' },
+          { text: 'Hand-struck Jorvik Viking silver replica coin', persona: 'viking' },
+          { text: 'Artisan Yorkshire tea & White Rose stationery', persona: 'medieval' },
+          { text: 'A bespoke box of York-crafted dark truffles & folklore tales', persona: 'ghost' }
+        ]
+      },
+      {
+        q: '7. Who are you hoping to impress most with this York itinerary?',
+        didYouKnow: 'King George VI once famously declared: "The history of York is the history of England."',
+        options: [
+          { text: 'A teacher or history lover who appreciates classical strategy', persona: 'roman' },
+          { text: 'Active explorers who love vivid, immersive museums', persona: 'viking' },
+          { text: 'Architecture & literature enthusiasts seeking timeless beauty', persona: 'medieval' },
+          { text: 'Curious travelers who crave mystery, legends & hidden alleys', persona: 'ghost' }
+        ]
+      }
+    ];
+
+    const personaProfiles = {
+      roman: {
+        title: 'The Roman Strategist of Eboracum',
+        badge: 'AD 71 • Imperial Architect',
+        desc: 'You appreciate structure, imperial engineering, and standing on the exact stones where Roman Emperors ruled Britain. Your ideal York journey follows the legionary walls, Bootham Bar, and the Yorkshire Museum.',
+        packageName: 'Roman Eboracum Command Route',
+        days: 3,
+        priceGbp: 365,
+        stops: ['minster', 'bootham', 'museum', 'clifford']
+      },
+      viking: {
+        title: 'The Viking Explorer of Jorvik',
+        badge: 'AD 866 • Norse Navigator',
+        desc: 'Bold, curious, and drawn to living archaeology, you thrive where trade routes and rivers meet. Your bespoke plan highlights JORVIK Viking Centre, the River Ouse, and Merchant Adventurers’ Hall.',
+        packageName: 'Viking Jorvik Expedition',
+        days: 4,
+        priceGbp: 450,
+        stops: ['jorvik', 'minster', 'merchant', 'railway']
+      },
+      medieval: {
+        title: 'The Medieval Scholar of York',
+        badge: '14th Century • Gothic Connoisseur',
+        desc: 'You are captivated by soaring cathedrals, Tudor timber gables, and centuries-old guild traditions. Your curated trip pairs York Minster with The Shambles, Micklegate Bar, and Chocolate Story.',
+        packageName: 'Grand Gothic & Guildhall Chronicle',
+        days: 4,
+        priceGbp: 495,
+        stops: ['minster', 'shambles', 'micklegate', 'chocolate', 'merchant']
+      },
+      ghost: {
+        title: 'The Snickelway & Folklore Seeker',
+        badge: '1503 • Keeper of York Legends',
+        desc: 'You love cities after dusk, secret medieval alleyways, and stories whispered behind timber doors. Your itinerary blends The Shambles, Castle Museum, Clifford’s Tower, and The Golden Fleece.',
+        packageName: 'Mystery, Snickelways & Lanterns Trail',
+        days: 3,
+        priceGbp: 410,
+        stops: ['shambles', 'fleece', 'castle', 'clifford', 'minster']
+      }
+    };
+
+    let currentQuizIndex = 0;
+    let quizAnswers = [];
+
+    function renderQuiz() {
+      const body = document.getElementById('quiz-body');
+      const badge = document.getElementById('quiz-progress-badge');
+      const bar = document.getElementById('quiz-progress-bar');
+      if (!body) return;
+
+      if (currentQuizIndex < quizQuestions.length) {
+        const item = quizQuestions[currentQuizIndex];
+        badge.textContent = `Question ${currentQuizIndex + 1} of ${quizQuestions.length}`;
+        bar.style.width = `${((currentQuizIndex + 1) / quizQuestions.length) * 100}%`;
+
+        body.innerHTML = `
+          <div class="space-y-4">
+            <h3 class="font-serif text-xl sm:text-2xl font-bold text-york-navy">${item.q}</h3>
+
+            <div class="grid grid-cols-1 gap-3">
+              ${item.options.map((opt, idx) => `
+                <button type="button" onclick="answerQuiz('${opt.persona}')" class="text-left p-4 rounded-2xl bg-york-cream hover:bg-york-navy hover:text-york-cream border-2 border-york-border hover:border-york-gold transition flex items-center justify-between gap-3 group cursor-pointer">
+                  <span class="text-xs sm:text-sm font-semibold">${opt.text}</span>
+                  <span class="font-mono text-xs font-bold text-york-gold group-hover:translate-x-1 transition">Select →</span>
+                </button>
+              `).join('')}
+            </div>
+
+            <!-- Did You Know Historical Fact Box -->
+            <div class="bg-york-navy text-york-cream rounded-2xl p-4 sm:p-5 border-l-4 border-york-gold space-y-1">
+              <div class="font-mono text-[11px] uppercase tracking-widest text-york-gold font-bold">
+                Did You Know? • York Historical Fact
+              </div>
+              <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                ${item.didYouKnow}
+              </p>
+            </div>
+          </div>
+        `;
+      } else {
+        // Compute winning persona
+        const tally = { roman: 0, viking: 0, medieval: 0, ghost: 0 };
+        quizAnswers.forEach(p => { if (tally[p] !== undefined) tally[p]++; });
+        const winnerKey = Object.keys(tally).reduce((a, b) => tally[a] >= tally[b] ? a : b);
+        const profile = personaProfiles[winnerKey];
+
+        badge.textContent = 'Persona Unlocked!';
+        bar.style.width = '100%';
+
+        body.innerHTML = `
+          <div class="bg-york-cream rounded-3xl p-6 sm:p-8 border-2 border-york-gold space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="font-mono text-xs uppercase font-bold px-3.5 py-1 rounded-full bg-york-navy text-york-gold">${profile.badge}</span>
+              <span class="font-serif text-2xl font-extrabold text-york-crimson">${formatPrice(profile.priceGbp)} <span class="text-xs font-sans font-normal text-york-slate">/ traveler</span></span>
+            </div>
+
+            <div class="space-y-2">
+              <h3 class="font-serif text-2xl sm:text-3xl font-extrabold text-york-navy">${profile.title}</h3>
+              <p class="text-xs sm:text-sm text-york-slate leading-relaxed">${profile.desc}</p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 border border-york-border space-y-2">
+              <div class="font-mono text-xs uppercase font-bold text-york-forest">Recommended Bespoke Package: ${profile.packageName} (${profile.days} Days)</div>
+              <div class="flex flex-wrap gap-1.5">
+                ${profile.stops.map(stopId => {
+                  const lm = yorkLandmarks.find(x => x.id === stopId);
+                  return lm ? `<span class="px-2.5 py-1 rounded-lg bg-york-cream border border-york-border text-xs font-semibold text-york-navy">✓ ${lm.name}</span>` : '';
+                }).join('')}
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 pt-2">
+              <button type="button" onclick="applyQuizPersonaToBuilder('${winnerKey}')" class="px-6 py-3.5 rounded-2xl bg-york-gold hover:bg-york-goldLight text-york-navy font-extrabold text-xs uppercase tracking-wider shadow cursor-pointer">
+                Apply Itinerary to Trip Builder →
+              </button>
+              <button type="button" onclick="restartQuiz()" class="px-5 py-3.5 rounded-2xl bg-white hover:bg-york-parchment text-york-navy border border-york-border font-bold text-xs uppercase tracking-wider cursor-pointer">
+                Retake Quiz
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function answerQuiz(persona) {
+      quizAnswers.push(persona);
+      currentQuizIndex++;
+      renderQuiz();
+    }
+
+    function restartQuiz() {
+      currentQuizIndex = 0;
+      quizAnswers = [];
+      renderQuiz();
+    }
+
+    function applyQuizPersonaToBuilder(winnerKey) {
+      const profile = personaProfiles[winnerKey];
+      if (!profile) return;
+      loadPresetPackage(profile.packageName, profile.days, 'Riverside Georgian 4-Star', profile.stops);
+    }
+
+    // -----------------------------------------------------------------------
+    // 5. TRIP BUILDER, LIVE QUOTE & PRINTABLE VIP PASS
+    // -----------------------------------------------------------------------
+    function loadPresetPackage(packageTitle, days, hotelName, landmarkIds) {
+      const daysSelect = document.getElementById('tb-days');
+      const hotelSelect = document.getElementById('tb-hotel');
+      const notesInput = document.getElementById('tb-notes');
+
+      if (daysSelect) daysSelect.value = String(days);
+      if (hotelSelect) hotelSelect.value = hotelName;
+      if (notesInput && !notesInput.value) {
+        notesInput.value = `Selected Curated Package: ${packageTitle}`;
+      }
+
+      selectedTripLandmarks = new Set(landmarkIds);
+      renderBuilderLandmarks();
+      renderMapInspector(selectedLandmarkId);
+      updateBuilderQuote();
+      switchTab('builder');
+    }
+
+    function renderBuilderLandmarks() {
+      const grid = document.getElementById('builder-landmarks-grid');
+      if (!grid) return;
+
+      grid.innerHTML = yorkLandmarks.map(lm => {
+        const checked = selectedTripLandmarks.has(lm.id) ? 'checked' : '';
+        return `
+          <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-york-border hover:border-york-navy cursor-pointer text-xs">
+            <span class="flex items-center gap-2 truncate">
+              <input type="checkbox" ${checked} onchange="toggleBuilderCheckbox('${lm.id}')" class="accent-york-navy w-4 h-4 rounded cursor-pointer"/>
+              <span class="font-semibold text-york-navy truncate">${lm.name}</span>
+            </span>
+            <span class="font-mono text-[11px] font-bold text-york-slate shrink-0">
+              ${lm.priceGbp === 0 ? 'Free' : formatPrice(lm.priceGbp)}
+            </span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function toggleBuilderCheckbox(id) {
+      if (selectedTripLandmarks.has(id)) {
+        selectedTripLandmarks.delete(id);
+      } else {
+        selectedTripLandmarks.add(id);
+      }
+      renderMapInspector(selectedLandmarkId);
+      updateBuilderQuote();
+    }
+
+    function updateBuilderQuote() {
+      const name = document.getElementById('tb-name')?.value || 'Valued Guest';
+      const email = document.getElementById('tb-email')?.value || 'concierge@dptrip.co.uk';
+      const date = document.getElementById('tb-date')?.value || '2027-04-14';
+      const days = parseInt(document.getElementById('tb-days')?.value || '4', 10);
+      const nights = Math.max(1, days - 1);
+      const adults = Math.max(1, parseInt(document.getElementById('tb-adults')?.value || '2', 10));
+      const children = Math.max(0, parseInt(document.getElementById('tb-children')?.value || '0', 10));
+      const dogs = Math.max(0, parseInt(document.getElementById('tb-dogs')?.value || '0', 10));
+      const hotelSelect = document.getElementById('tb-hotel');
+      const hotelName = hotelSelect?.value || 'Riverside Georgian 4-Star';
+      const nightRateGbp = parseFloat(hotelSelect?.selectedOptions[0]?.getAttribute('data-rate') || '135');
+      const notes = document.getElementById('tb-notes')?.value || 'Standard bespoke concierge support';
+
+      // Calculate rooms needed (2 guests per room)
+      const rooms = Math.max(1, Math.ceil((adults + children * 0.5) / 2));
+      const hotelCostGbp = rooms * nights * nightRateGbp;
+      const petFeeGbp = dogs * nights * 15;
+
+      // Landmark tickets per person (children 50% discount)
+      let perAdultTicketsGbp = 0;
+      const chosenNames = [];
+      selectedTripLandmarks.forEach(id => {
+        const lm = yorkLandmarks.find(item => item.id === id);
+        if (lm) {
+          perAdultTicketsGbp += lm.priceGbp;
+          chosenNames.push(lm.name);
+        }
+      });
+      const ticketsTotalGbp = Math.round(perAdultTicketsGbp * (adults + children * 0.5));
+      const guideFeeGbp = days * 45;
+      const totalGbp = hotelCostGbp + petFeeGbp + ticketsTotalGbp + guideFeeGbp;
+
+      // Update Live Breakdown Box
+      const noteEl = document.getElementById('quote-currency-note');
+      if (noteEl) noteEl.textContent = `Currency: ${currentCurrency === 'GBP' ? 'GBP (£)' : 'EUR (€)'}`;
+
+      const breakdownEl = document.getElementById('builder-quote-breakdown');
+      if (breakdownEl) {
+        breakdownEl.innerHTML = `
+          <div class="flex justify-between">
+            <span class="text-slate-300">${hotelName} (${rooms} rm × ${nights} nts)</span>
+            <span class="font-mono font-bold">${formatPrice(hotelCostGbp)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-300">Priority Landmark Passes (${chosenNames.length} stops)</span>
+            <span class="font-mono font-bold">${formatPrice(ticketsTotalGbp)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-300">Dedicated DP Guide &amp; Concierge (${days} days)</span>
+            <span class="font-mono font-bold">${formatPrice(guideFeeGbp)}</span>
+          </div>
+          ${dogs > 0 ? `
+          <div class="flex justify-between text-york-goldLight">
+            <span>Dog-Friendly Welcome &amp; Stay (${dogs} dog${dogs > 1 ? 's' : ''})</span>
+            <span class="font-mono font-bold">${formatPrice(petFeeGbp)}</span>
+          </div>` : ''}
+        `;
+      }
+
+      const totalEl = document.getElementById('builder-total-price');
+      if (totalEl) totalEl.textContent = formatPrice(totalGbp);
+
+      // Update Printable VIP Pass Card
+      const vipDetails = document.getElementById('vip-pass-details');
+      if (vipDetails) {
+        vipDetails.innerHTML = `
+          <div class="grid grid-cols-2 gap-2 bg-york-cream p-3 rounded-2xl border border-york-border">
+            <div>
+              <div class="text-[10px] font-mono uppercase text-york-slate">Lead Traveler</div>
+              <div class="font-bold text-york-navy truncate">${escapeHtml(name)}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-mono uppercase text-york-slate">Departure Date</div>
+              <div class="font-bold text-york-navy">${escapeHtml(date)} (${days} Days)</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-mono uppercase text-york-slate">Party Size</div>
+              <div class="font-bold text-york-navy">${adults} Adult${adults > 1 ? 's' : ''}${children > 0 ? `, ${children} Child` : ''}${dogs > 0 ? `, ${dogs} Dog 🐾` : ''}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-mono uppercase text-york-slate">Total Quote</div>
+              <div class="font-extrabold text-york-crimson">${formatPrice(totalGbp)}</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[10px] font-mono uppercase text-york-slate">Accommodation &amp; Contact</div>
+            <div class="font-semibold text-york-navy">${escapeHtml(hotelName)} • ${escapeHtml(email)}</div>
+          </div>
+
+          <div>
+            <div class="text-[10px] font-mono uppercase text-york-slate mb-1">Confirmed York Stops (${chosenNames.length})</div>
+            <div class="flex flex-wrap gap-1">
+              ${chosenNames.length > 0
+                ? chosenNames.map(n => `<span class="px-2 py-0.5 rounded-md bg-york-navy text-york-cream text-[10px] font-semibold">${escapeHtml(n)}</span>`).join('')
+                : '<span class="text-york-slate italic">Custom Free-Roaming Itinerary</span>'}
+            </div>
+          </div>
+
+          <div class="text-[11px] text-york-slate bg-york-parchment/70 px-3 py-2 rounded-xl">
+            <strong class="text-york-navy">Notes:</strong> ${escapeHtml(notes)}
+          </div>
+        `;
+      }
+    }
+
+    function generateVipPass() {
+      updateBuilderQuote();
+      const passCard = document.getElementById('vip-pass-printable');
+      if (passCard) {
+        passCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        passCard.classList.add('ring-4', 'ring-york-gold');
+        setTimeout(() => passCard.classList.remove('ring-4', 'ring-york-gold'), 1600);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // -----------------------------------------------------------------------
+    // 6. INTERACTIVE PACKING CHECKLIST
+    // -----------------------------------------------------------------------
+    const packingCategories = [
+      {
+        title: 'Yorkshire Weather Layers',
+        items: [
+          { id: 'p1', label: 'Lightweight waterproof trench or rain jacket', packed: true },
+          { id: 'p2', label: 'Breathable merino sweater for breezy Bar Walls', packed: true },
+          { id: 'p3', label: 'Compact windproof travel umbrella', packed: false }
+        ]
+      },
+      {
+        title: 'Cobblestone Footwear',
+        items: [
+          { id: 'p4', label: 'Cushioned walking shoes for Shambles cobbles', packed: true },
+          { id: 'p5', label: 'Evening smart-casual shoes for Georgian dining', packed: false },
+          { id: 'p6', label: 'Extra blister-guard walking socks', packed: false }
+        ]
+      },
+      {
+        title: 'Travel & Cultural Essentials',
+        items: [
+          { id: 'p7', label: 'Printed DP Trip & Journey VIP Pass', packed: true },
+          { id: 'p8', label: 'Reusable water bottle & daypack', packed: false },
+          { id: 'p9', label: 'Field notebook for Minster & museum sketches', packed: false }
+        ]
+      },
+      {
+        title: 'Tech & UK Documents',
+        items: [
+          { id: 'p10', label: 'UK Type-G 3-pin power adapter', packed: true },
+          { id: 'p11', label: 'Passport / Valid ID & travel insurance card', packed: true },
+          { id: 'p12', label: 'Portable power bank for photos & City Map', packed: false }
+        ]
+      }
+    ];
+
+    function renderPackingChecklist() {
+      const grid = document.getElementById('packing-categories-grid');
+      if (!grid) return;
+
+      let total = 0;
+      let packedCount = 0;
+
+      grid.innerHTML = packingCategories.map((cat, catIdx) => {
+        cat.items.forEach(it => {
+          total++;
+          if (it.packed) packedCount++;
+        });
+
+        return `
+          <div class="bg-york-cream rounded-2xl p-4 border border-york-border space-y-2.5">
+            <h4 class="font-serif text-base font-bold text-york-navy border-b border-york-border pb-1.5">${escapeHtml(cat.title)}</h4>
+            <div class="space-y-1.5">
+              ${cat.items.map((it, itemIdx) => `
+                <label class="flex items-center gap-2.5 text-xs sm:text-sm cursor-pointer select-none">
+                  <input type="checkbox" ${it.packed ? 'checked' : ''} onchange="togglePackingItem(${catIdx}, ${itemIdx})" class="w-4 h-4 accent-york-forest rounded cursor-pointer"/>
+                  <span class="${it.packed ? 'line-through text-york-slate' : 'text-york-navy font-medium'}">${escapeHtml(it.label)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const pct = total > 0 ? Math.round((packedCount / total) * 100) : 0;
+      const textEl = document.getElementById('packing-progress-text');
+      const barEl = document.getElementById('packing-progress-bar');
+      if (textEl) textEl.textContent = `${packedCount} / ${total} Packed (${pct}%)`;
+      if (barEl) barEl.style.width = `${pct}%`;
+    }
+
+    function togglePackingItem(catIdx, itemIdx) {
+      packingCategories[catIdx].items[itemIdx].packed = !packingCategories[catIdx].items[itemIdx].packed;
+      renderPackingChecklist();
+    }
+
+    function addCustomPackingItem() {
+      const input = document.getElementById('custom-pack-input');
+      const val = input?.value.trim();
+      if (!val) return;
+      packingCategories[2].items.push({ id: 'custom-' + Date.now(), label: val, packed: false });
+      input.value = '';
+      renderPackingChecklist();
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. SEARCHABLE FUN FACTS VAULT
+    // -----------------------------------------------------------------------
+    const funFactsVault = [
+      {
+        era: 'Roman Eboracum',
+        title: 'Where Constantine Became Emperor',
+        fact: 'In 306 AD, Constantine the Great was hailed as Emperor of Rome inside York’s legionary fortress—making York the birthplace of the ruler who later founded Constantinople.'
+      },
+      {
+        era: 'Viking Jorvik',
+        title: 'Why York Streets End in "-gate"',
+        fact: 'In York, "Bar" means a medieval gate (like Bootham Bar), while "Gate" comes from the Viking Old Norse word "gata", meaning street (like Stonegate and Coppergate).'
+      },
+      {
+        era: 'Medieval & Tudor',
+        title: '250 Years to Build York Minster',
+        fact: 'Construction of the present Gothic York Minster began in 1220 and was not consecrated as complete until 1472—spanning over two and a half centuries of master craftsmanship.'
+      },
+      {
+        era: 'Ghosts & Legends',
+        title: 'The Roman Legionnaires in the Cellar',
+        fact: 'In 1953, an apprentice plumber working in the cellar of Treasurer’s House witnessed a column of Roman soldiers marching knee-deep through the floor—along the buried level of the ancient Roman road.'
+      },
+      {
+        era: 'Medieval & Tudor',
+        title: 'The Birthplace of Guy Fawkes',
+        fact: 'Guy Fawkes was born on Stonegate in York in 1570 and attended St. Peter’s School, which still operates in York today as one of the oldest schools in the world (founded in 627 AD).'
+      },
+      {
+        era: 'Viking Jorvik',
+        title: 'The 40,000-Artifact Time Capsule',
+        fact: 'Waterlogged, oxygen-free soil beneath Coppergate preserved 1,000-year-old Viking leather shoes, wooden bowls, wool socks, and even Viking-era insects.'
+      }
+    ];
+
+    function renderFunFacts() {
+      const grid = document.getElementById('fun-facts-grid');
+      if (!grid) return;
+
+      const query = (document.getElementById('facts-search-input')?.value || '').toLowerCase();
+      const category = document.getElementById('facts-category-filter')?.value || 'ALL';
+
+      const filtered = funFactsVault.filter(item => {
+        const matchesCat = category === 'ALL' || item.era === category;
+        const matchesQuery = item.title.toLowerCase().includes(query) || item.fact.toLowerCase().includes(query) || item.era.toLowerCase().includes(query);
+        return matchesCat && matchesQuery;
+      });
+
+      grid.innerHTML = filtered.length > 0
+        ? filtered.map(item => `
+            <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm space-y-2.5 flex flex-col justify-between">
+              <div class="space-y-2">
+                <span class="inline-block font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-navy text-york-gold">${escapeHtml(item.era)}</span>
+                <h3 class="font-serif text-lg font-bold text-york-navy">${escapeHtml(item.title)}</h3>
+                <p class="text-xs sm:text-sm text-york-slate leading-relaxed">${escapeHtml(item.fact)}</p>
+              </div>
+            </article>
+          `).join('')
+        : `<div class="col-span-full text-center py-10 text-sm text-york-slate">No historical facts matched your filter. Try clearing the search box!</div>`;
+    }
+
+    // -----------------------------------------------------------------------
+    // 8. FUTURE IDEAS BOARD WITH UPVOTES
+    // -----------------------------------------------------------------------
+    const futureIdeas = [
+      {
+        id: 'f1',
+        tag: 'Rail Extension • 1h North',
+        title: 'Hadrian’s Wall Roman Frontier Add-On',
+        desc: 'Pair 3 days in Roman Eboracum (York) with a 2-day expedition north to Housesteads Roman Fort and Vindolanda.',
+        votes: 42,
+        voted: false
+      },
+      {
+        id: 'f2',
+        tag: 'Coastal Heritage • 1h East',
+        title: 'Whitby Abbey & North York Moors Steam Trail',
+        desc: 'Ride the heritage steam railway across the Yorkshire Moors to Whitby Abbey—birthplace of English poetry and Bram Stoker’s Dracula.',
+        votes: 37,
+        voted: false
+      },
+      {
+        id: 'f3',
+        tag: 'Celtic & Royal Rail • 2.5h North',
+        title: 'York to Edinburgh Royal Castle Express',
+        desc: 'A seamless two-capital itinerary linking York’s medieval Bar Walls with Edinburgh’s Royal Mile along the scenic coastal rail line.',
+        votes: 51,
+        voted: false
+      }
+    ];
+
+    function renderFutureIdeas() {
+      const grid = document.getElementById('future-ideas-grid');
+      if (!grid) return;
+
+      grid.innerHTML = futureIdeas.map((idea, idx) => `
+        <article class="bg-white rounded-3xl p-6 border-2 border-york-border shadow-sm flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <span class="inline-block font-mono text-[11px] font-bold px-3 py-1 rounded-full bg-york-forest/10 text-york-forest">${escapeHtml(idea.tag)}</span>
+            <h3 class="font-serif text-xl font-bold text-york-navy">${escapeHtml(idea.title)}</h3>
+            <p class="text-xs sm:text-sm text-york-slate leading-relaxed">${escapeHtml(idea.desc)}</p>
+          </div>
+          <button type="button" onclick="upvoteIdea(${idx})" class="w-full py-2.5 px-4 rounded-2xl font-mono text-xs font-extrabold transition flex items-center justify-center gap-2 cursor-pointer ${
+            idea.voted
+              ? 'bg-york-gold text-york-navy'
+              : 'bg-york-navy hover:bg-york-navyLight text-york-cream'
+          }">
+            <span>▲ ${idea.voted ? 'Voted' : 'Upvote Route'}</span>
+            <span class="px-2 py-0.5 rounded-full bg-white/20">${idea.votes}</span>
+          </button>
+        </article>
+      `).join('');
+    }
+
+    function upvoteIdea(idx) {
+      const item = futureIdeas[idx];
+      if (!item) return;
+      item.voted = !item.voted;
+      item.votes += item.voted ? 1 : -1;
+      renderFutureIdeas();
+    }
+
+    function proposeFutureIdea() {
+      const titleInput = document.getElementById('idea-title-input');
+      const descInput = document.getElementById('idea-desc-input');
+      const title = titleInput?.value.trim();
+      const desc = descInput?.value.trim();
+      if (!title || !desc) return;
+
+      futureIdeas.unshift({
+        id: 'custom-' + Date.now(),
+        tag: 'Community Proposal • New',
+        title,
+        desc,
+        votes: 1,
+        voted: true
+      });
+      titleInput.value = '';
+      descInput.value = '';
+      renderFutureIdeas();
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. INITIALIZE ALL MODULES ON LOAD
+    // -----------------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      initMapPanHandlers();
+      renderMapPins();
+      renderMapInspector(selectedLandmarkId);
+      renderQuiz();
+      renderBuilderLandmarks();
+      updateBuilderQuote();
+      renderPackingChecklist();
+      renderFunFacts();
+      renderFutureIdeas();
+    });
+  </script>
+</body>
+</html>
